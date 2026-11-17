@@ -1,0 +1,3 @@
+# Cofre: cifrado no GitHub com git-crypt. Sem `git-crypt unlock` os arquivos aparecem como binário.
+pessoal/cofre/** filter=git-crypt diff=git-crypt
+pessoal/cofre/README.md !filter !diff

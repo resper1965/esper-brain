@@ -8,7 +8,9 @@
 | `people/` | uma ficha por pessoa; `_aprovados.md` diz quem a Gabi escuta |
 | `pessoal/familia/` | fichas da família (sem número de documento) |
 | `pessoal/casa/` | pets, bens, casa, Home Assistant |
-| `bekaa/` | a PJ: clientes, contratos, propostas |
+| `empresas/<nome>/` | empresas que o Ricardo toca: ness, ionic-health, baalbeck, fakiha, bekaa (README = cadastro, sócios, documentos societários) |
+| `empresas/participacoes/` | uma ficha cadastral por empresa em que ele é sócio sem gerir |
+| `pessoal/cofre/` | números de documento, CNPJ/IE/IM — **cifrado** (git-crypt); sem a chave aparece binário |
 | `projetos/` | um tema por arquivo (ou pasta, se tiver documentos); formato em `projetos/_modelo.md` |
 | `diario/AAAA/MM-DD.md` | nota do dia |
 | `skills/` | instruções portáveis (digestão, salvar sessão, capturar, retomar) |
