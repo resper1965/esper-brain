@@ -155,4 +155,4 @@ Mesmas 10 perguntas reais em cada camada: (1) markdown puro (mapa, hot, busca de
 
 ## Fora de escopo agora
 
-Outras empresas além da Bekaa; Context Ledger do vídeo; painel web novo para o markdown.
+Gestão das empresas (cada uma terá o próprio cérebro); Context Ledger do vídeo; painel web novo para o markdown.
