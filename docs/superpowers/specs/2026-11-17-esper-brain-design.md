@@ -120,10 +120,11 @@ Herdadas do `gabi-brain`:
 | Origem (tabelas) | Destino |
 |---|---|
 | `pessoa`, `pet` (família) | `pessoal/familia/<pessoa>.md`, `pessoal/casa/pets.md` |
-| `bem`, `documento*` | seção "Documentos" na ficha da pessoa: tipo, validade, link do Paperless (sem número) |
+| `documento*` de pessoas | seção "Documentos" na ficha da pessoa: tipo, datas, `paperless:<id>` (sem número) |
 | `projeto`, `projeto_fato`, `projeto_pessoa`, `atividade` | `projetos/<slug>.md` (fatos, pessoas, atividades abertas) |
 | `atividade` sem projeto | `pendencias.md` |
-| `decisao` | `decisoes.md` |
+| `decisao` | **não exporta**: no código é o canal de decisões financeiras (conta, compromisso, "para quem"); fica no `gabi-finance`. `decisoes.md` nasce vazio |
+| `bem` + `documento` de bens | `pessoal/casa/bens.md` (tipo, datas, link do Paperless) |
 | `contato_graph` / `contato_google` | **não** vira ficha em massa; só gera `people/<pessoa>.md` para quem for marcado em `_aprovados.md` |
 | `allowlist_vip`, `escuta_remetente` | `people/_aprovados.md` |
 
