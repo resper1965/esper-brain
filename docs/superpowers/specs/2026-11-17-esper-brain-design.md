@@ -51,6 +51,37 @@ esper-brain/
 - Valor, saldo e lançamento **nunca** entram no markdown: "conta X vence dia 10 → ver gabi-finance".
 - **Números de documento (CPF, RG, passaporte etc.) não entram no markdown**: ficam no Paperless e no Bitwarden. O markdown guarda tipo, validade e o link do Paperless.
 
+## Projetos e temas da vida
+
+Dor: temas de todo tamanho ("trocar de carro" a "sucessão familiar") precisam guardar contexto, dados correlatos e prazos, para que, quando o assunto voltar à cabeça, dê para capturar a ideia e retomar sem perder o fio.
+
+**Formato:** começa como `projetos/<slug>.md`; quando o tema ganha documentos próprios, vira pasta `projetos/<slug>/` com `README.md` no mesmo formato e os anexos ao lado. Documentos sensíveis ficam no Paperless; o markdown guarda o link.
+
+```markdown
+---
+tema: Sucessão familiar
+estado: ativo            # ativo | parado | concluído
+proximo_passo: Agendar conversa com advogado sobre holding
+prazo: 2027-03-31
+pessoas: [sandra, andrezza]
+ligacoes: [Paperless: tag sucessao, gabi-finance: Baalbeck, Fakiha]
+---
+## Onde estou            # 3-5 linhas, reescritas a cada avanço
+## Ideias soltas         # o que veio à cabeça, com data, sem filtro
+## Fatos e decisões      # só o confirmado pelo Ricardo
+## Perguntas em aberto
+## Prazos                # cada prazo também vai para pendencias.md
+## Histórico             # datado, mais novo em cima
+```
+
+**Skills do Hermes:**
+- **capturar** — "sucessão: ver ITCMD de SP" → acha o tema, acrescenta em "Ideias soltas" com data, só responde "anotado em Sucessão familiar" depois do commit. Tema não reconhecido → pergunta: tema novo ou qual existente.
+- **retomar** — "sucessão" / "como está o carro?" → briefing: onde estou, próximo passo, prazos, perguntas em aberto, ideias soltas não tratadas.
+
+**Prazos:** a digestão diária põe no `hot.md` o que vence em até 7 dias; tema sem mudança há 30 dias entra no resumo semanal com "segue ou arquiva?".
+
+Substitui o módulo de projetos do `gabi-brain` (ADR-034), mantendo pessoas, fatos só com o sim do Ricardo, ligação com dinheiro e anexos.
+
 ## Fluxo de dados
 
 ```
