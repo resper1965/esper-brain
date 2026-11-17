@@ -1,6 +1,7 @@
 ---
 tema: "Nome do tema"
 estado: ativo            # ativo | parado | concluído
+apelidos: []             # outras palavras para o tema (ex.: [carro, suv])
 proximo_passo: ""
 prazo:                   # AAAA-MM-DD
 pessoas: []

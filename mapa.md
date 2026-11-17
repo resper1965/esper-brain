@@ -12,7 +12,9 @@
 | `pessoal/cofre/` | números de documento, CNPJ/IE/IM — **cifrado** (git-crypt); sem a chave aparece binário |
 | `projetos/` | um tema por arquivo (ou pasta, se tiver documentos); formato em `projetos/_modelo.md` |
 | `diario/AAAA/MM-DD.md` | nota do dia |
-| `skills/` | instruções portáveis (digestão, salvar sessão, capturar, retomar) |
+| `skills/` | instruções portáveis: `capturar`, `retomar`, `salvar-sessao` (a digestão vem na etapa 3B) |
+| `tools/gravar.sh` | o único jeito de gravar: trava, pull --rebase, confere o cofre, commit, push |
+| `deploy/hermes/` | instalação no Hermes da VPS (SOUL, ferramentas); passo a passo em `docs/etapa3a.md` |
 
 ## Ferramentas fora do markdown
 - **Dinheiro:** MCP `gabi-finance`. `gabi-finance projeto:N` = gastos/orçamento do projeto N.
