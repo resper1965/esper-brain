@@ -11,7 +11,7 @@ Origem: vídeo "segundo cérebro em 3 degraus" (pasta markdown no GitHub → GBr
 | # | Decisão |
 |---|---|
 | D1 | Um repositório privado único, `resper1965/esper-brain`: vida pessoal + empresas. **Empresas que ele toca** (pasta completa): ness, IONIC Health, Baalbeck, Fakiha e Bekaa (a PJ). **Participações** (sócio sem gerir, ex.: SECOPS — antiga NESS Law): uma ficha cadastral cada. *(revisto em 17/11)* |
-| D7 | **Cofre cifrado**: números de documento e CNPJ/IE/IM só em `pessoal/cofre/`, cifrado com git-crypt; a Gabi tem a chave na VPS e responde quando pedido. Texto livre **não** é mascarado: o exportador lista as linhas suspeitas (caminho:linha) para o Ricardo decidir. *(revisto em 17/11: máscara tornava os dados inúteis)* |
+| D7 | **Cofre cifrado**: números de documento e CNPJ (IE/IM à mão) só em `pessoal/cofre/`, cifrado com git-crypt; a Gabi tem a chave na VPS e responde quando pedido. Texto livre **não** é mascarado: o exportador lista as linhas suspeitas (caminho:linha) para o Ricardo decidir. *(revisto em 17/11: máscara tornava os dados inúteis)* |
 | D2 | O financeiro **não** vira markdown. O `gabi-brain` é quebrado e nasce o `gabi-finance` (SQLite + MCP + Paperless). O markdown só aponta para ele. |
 | D3 | Agenda, e-mail, Teams e WhatsApp entram por um **coletor** que grava log bruto; a **digestão** (cron do Hermes, modelo barato via OpenRouter) transforma o log em markdown. |
 | D4 | GBrain e Honcho são **testados**, não adotados de saída: só ficam se ganharem do markdown puro. Honcho, se ficar, é auto-hospedado na VPS. |
@@ -53,7 +53,7 @@ esper-brain/
 
 - Cada pasta grande tem o seu `mapa.md`.
 - `hot.md` e `pendencias.md` ficam curtos (são lidos em toda sessão); o histórico vai para `diario/`.
-- Valor, saldo e lançamento **nunca** entram no markdown: "conta X vence dia 10 → ver gabi-finance".
+- Saldo, extrato e lançamento nunca entram no markdown (ver gabi-finance); valor citado numa anotação pode ficar.
 - **Números de documento e CNPJ/IE/IM só no cofre** (`pessoal/cofre/`, cifrado com git-crypt). Fichas e READMEs guardam tipo, datas, `paperless:N` e "número no cofre". A Gabi lê o cofre para responder.
 - **Empresas**: cada README traz cadastro, sócios e administração, links do Paperless para contrato social consolidado, alterações, cartão CNPJ, procurações e atas, e um resumo do contrato social (capital, objeto, poderes de administração, regras de saída/sucessão). Clientes sob NDA: só contexto, pessoas e prazos. IONIC: só o papel do Ricardo e os temas dele.
 
@@ -126,7 +126,7 @@ Herdadas do `gabi-brain`:
 | Origem (tabelas) | Destino |
 |---|---|
 | `pessoa`, `pet` (família) | `pessoal/familia/<pessoa>.md`, `pessoal/casa/pets.md` |
-| `documento*` de pessoas | seção "Documentos" na ficha da pessoa: tipo, datas, `paperless:<id>` (sem número) |
+| `documento*` de pessoas | seção "Documentos" na ficha da pessoa: tipo, datas, `paperless:<id>` · "número no cofre" (sem número) |
 | `projeto`, `projeto_fato`, `projeto_pessoa`, `atividade` | `projetos/<slug>.md` (fatos, pessoas, atividades abertas) |
 | `atividade` sem projeto | `pendencias.md` |
 | `decisao` | **não exporta**: no código é o canal de decisões financeiras (conta, compromisso, "para quem"); fica no `gabi-finance`. `decisoes.md` nasce vazio |
