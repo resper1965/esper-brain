@@ -10,7 +10,7 @@ Origem: vídeo "segundo cérebro em 3 degraus" (pasta markdown no GitHub → GBr
 
 | # | Decisão |
 |---|---|
-| D1 | Um repositório privado único, `resper1965/esper-brain`: vida pessoal + empresas. **Empresas que ele toca** (pasta completa): ness, IONIC Health, Baalbeck, Fakiha e Bekaa (a PJ). **Participações** (sócio sem gerir, ex.: SECOPS — antiga NESS Law): uma ficha cadastral cada. *(revisto em 17/11)* |
+| D1 | Um repositório privado único, `resper1965/esper-brain`: vida pessoal + **ficha cadastral de cada empresa** (ness, IONIC Health, Baalbeck, Fakiha, Bekaa, SECOPS — antiga NESS Law — e demais participações). Nada de gestão das empresas aqui: **cada empresa terá o próprio cérebro**; a ficha aponta para ele. *(revisto em 17/11)* |
 | D7 | **Cofre cifrado**: números de documento e CNPJ (IE/IM à mão) só em `pessoal/cofre/`, cifrado com git-crypt; a Gabi tem a chave na VPS e responde quando pedido. Texto livre **não** é mascarado: o exportador lista as linhas suspeitas (caminho:linha) para o Ricardo decidir. *(revisto em 17/11: máscara tornava os dados inúteis)* |
 | D2 | O financeiro **não** vira markdown. O `gabi-brain` é quebrado e nasce o `gabi-finance` (SQLite + MCP + Paperless). O markdown só aponta para ele. |
 | D3 | Agenda, e-mail, Teams e WhatsApp entram por um **coletor** que grava log bruto; a **digestão** (cron do Hermes, modelo barato via OpenRouter) transforma o log em markdown. |
@@ -41,10 +41,7 @@ esper-brain/
 │   ├── familia/       # fichas da família
 │   ├── cofre/         # CIFRADO (git-crypt): números de documento, CNPJ/IE/IM
 │   └── casa/          # Home Assistant, contas da casa, pets
-├── empresas/
-│   ├── <empresa>/     # ness, ionic-health, baalbeck, fakiha, bekaa: README (cadastro, sócios,
-│   │                  # documentos societários, resumo do contrato social), clientes/, contratos/
-│   └── participacoes/ # uma ficha cadastral por empresa em que é sócio sem gerir
+├── empresas/<nome>.md # ficha cadastral: sócios, quem assina, contrato social (paperless), link do cérebro da empresa
 ├── projetos/<slug>.md # um arquivo por projeto (com atividades)
 ├── diario/AAAA/MM-DD.md
 ├── skills/            # digestao.md, salvar-sessao.md (portáveis entre agentes)
@@ -55,7 +52,7 @@ esper-brain/
 - `hot.md` e `pendencias.md` ficam curtos (são lidos em toda sessão); o histórico vai para `diario/`.
 - Saldo, extrato e lançamento nunca entram no markdown (ver gabi-finance); valor citado numa anotação pode ficar.
 - **Números de documento e CNPJ/IE/IM só no cofre** (`pessoal/cofre/`, cifrado com git-crypt). Fichas e READMEs guardam tipo, datas, `paperless:N` e "número no cofre". A Gabi lê o cofre para responder.
-- **Empresas**: cada README traz cadastro, sócios e administração, links do Paperless para contrato social consolidado, alterações, cartão CNPJ, procurações e atas, e um resumo do contrato social (capital, objeto, poderes de administração, regras de saída/sucessão). Clientes sob NDA: só contexto, pessoas e prazos. IONIC: só o papel do Ricardo e os temas dele.
+- **Empresas**: só ficha cadastral (cadastro, sócios e administração, quem assina, links do Paperless para contrato social e alterações, histórico societário). Gestão, clientes e contratos ficam no cérebro de cada empresa.
 
 ## Projetos e temas da vida
 
@@ -132,7 +129,7 @@ Herdadas do `gabi-brain`:
 | `decisao` | **não exporta**: no código é o canal de decisões financeiras (conta, compromisso, "para quem"); fica no `gabi-finance`. `decisoes.md` nasce vazio |
 | `bem` + `documento` de bens | `pessoal/casa/bens.md` (tipo, datas, link do Paperless) |
 | `documento_numero` | `pessoal/cofre/documentos.md` (cifrado) |
-| `empresa` | `empresas/_importadas.md` (nome, relação) + CNPJ em `pessoal/cofre/empresas.md`; o Ricardo/Gabi distribuem em pastas |
+| `empresa` | `empresas/_importadas.md` (nome, relação) + CNPJ em `pessoal/cofre/empresas.md`; viram fichas `empresas/<nome>.md` |
 | `contato_graph` / `contato_google` | **não** vira ficha em massa; só gera `people/<pessoa>.md` para quem for marcado em `_aprovados.md` |
 | `allowlist_vip`, `escuta_remetente` | `people/_aprovados.md` |
 
