@@ -4,13 +4,12 @@ import argparse, os, shutil, sys
 INI, FIM = "<!-- esper-brain:inicio -->", "<!-- esper-brain:fim -->"
 BLOCO = f"""{INI}
 ## Segundo cérebro (esper-brain)
-- O cérebro do Ricardo é o repositório `~/esper-brain` (markdown). No começo de toda conversa nova, leia com o terminal `~/esper-brain/AGENTS.md` e siga o que ele manda ler (mapa, hot, pendências).
-- Temas e projetos da vida, pessoas, família, casa, ficha cadastral das empresas e decisões estão lá. Procure (`grep -ril <termo> ~/esper-brain --include=*.md`) antes de responder; não invente.
+- O cérebro do Ricardo é o repositório esper-brain (markdown), acessado só pelo MCP `esper_brain`. No começo de toda conversa nova chame `mcp__esper_brain__inicio` e siga o AGENTS.md que vem nele.
+- Temas e projetos da vida, pessoas, família, casa, ficha cadastral das empresas e decisões estão lá. Use `buscar` e `ler` antes de responder; não invente.
 - Anotar ideia/fato/prazo de um tema: skill `capturar`. Retomar um tema: skill `retomar`. Guardar o que importou da conversa: skill `salvar-sessao`.
-- Só diga "anotado" depois que `~/esper-brain/tools/gravar.sh` imprimir `gravado:`. Se não imprimir, diga que não gravou e por quê.
+- Só diga "anotado" depois que `gravar` responder `gravado:`. Se não, diga que não gravou e por quê.
 - Dinheiro: MCP `gabi_finance`. Documentos: Paperless. Agenda, e-mail, atividades (Linear) e avisos não financeiros: `gabi_brain`, como antes.
-- Projetos e família não estão mais no `gabi_brain`: estão no markdown.
-- Nunca `git push --force`, `git reset --hard` nem apagar arquivo do cérebro sem o Ricardo pedir.
+- Projetos e família não estão mais no `gabi_brain`: estão no esper-brain.
 {FIM}"""
 def main(argv=None):
     ap = argparse.ArgumentParser()

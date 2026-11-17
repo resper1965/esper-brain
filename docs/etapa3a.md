@@ -1,6 +1,8 @@
 # Etapa 3A: a Gabi passa a usar o esper-brain
 
-Mesma VPS, sem serviço novo. Ao fim: a Gabi lê o cérebro em toda conversa, anota em temas (`capturar`), retoma temas (`retomar`), salva a conversa (`salvar-sessao`) e grava com commit e push. Projetos e família saem do `gabi_brain` do Hermes (os dados ficam no banco; nada é apagado).
+Mesma VPS. Ao fim: a Gabi lê o cérebro em toda conversa, anota em temas (`capturar`), retoma temas (`retomar`), salva a conversa (`salvar-sessao`) e grava com commit e push. Projetos e família saem do `gabi_brain` do Hermes (os dados ficam no banco; nada é apagado).
+
+**Acesso só pelo MCP `esper_brain`** (`tools/esper_mcp.py`, stdio, roda como `ricardo`): a Gabi **não** ganha terminal nem acesso a arquivos no Telegram/WhatsApp (ela lê conteúdo de terceiros; shell seria risco). O MCP só mexe dentro do repositório, só em `.md`, nunca escreve no cofre nem em código, e grava pelo `tools/gravar.sh`. Ferramentas: `inicio`, `ler`, `buscar`, `listar_temas`, `criar_tema`, `anotar`, `acrescentar`, `substituir`, `gravar`.
 
 Tudo como **root**. O Ricardo roda; o Claude guia. Nenhum segredo aparece na tela.
 
@@ -8,18 +10,15 @@ Tudo como **root**. O Ricardo roda; o Claude guia. Nenhum segredo aparece na tel
 HUSER=ricardo; HOME_H=/home/ricardo; EB=$HOME_H/esper-brain; D=$(date +%F-%H%M)
 ```
 
-## Passo 0: o Hermes tem terminal nos canais?
+## Passo 0: ambiente Python do MCP (fora do repositório)
 
 ```bash
-python3 - <<'PY'
-import yaml
-c = yaml.safe_load(open("/home/ricardo/.hermes/config.yaml"))
-for p, ts in (c.get("platform_toolsets") or {}).items():
-    print(p, "->", ts)
-PY
+sudo -u "$HUSER" -H python3 -m venv "$HOME_H/.local/share/esper-brain-mcp"
+sudo -u "$HUSER" -H "$HOME_H/.local/share/esper-brain-mcp/bin/pip" install -q 'mcp>=1.2,<2'
+sudo -u "$HUSER" -H "$HOME_H/.local/share/esper-brain-mcp/bin/python" -c "import mcp.server.fastmcp; print('mcp ok')"
 ```
 
-**Verificação:** `telegram` e `whatsapp` incluem o toolset de terminal (`terminal`, `hermes-telegram`/`hermes-whatsapp` ou equivalente que o inclua). Se não incluírem, **pare** e me mande a saída.
+**Verificação:** `mcp ok`.
 
 ## Passo 1: chave de deploy (escrita só no esper-brain)
 
@@ -83,28 +82,29 @@ diff -rq /tmp/esper-delta "$EB" | grep -v "^Only in $EB" | sed "s#/tmp/esper-del
 ```bash
 sudo -u "$HUSER" ln -sfn "$EB/skills" "$HOME_H/.hermes/skills/esper-brain"
 ls "$HOME_H/.hermes/skills/esper-brain/"
-sudo -u "$HUSER" -H bash -lc 'hermes skills list 2>/dev/null | grep -E "capturar|retomar|salvar-sessao"'
 ```
 
-**Verificação:** as três skills aparecem (e não estão em `skills.platform_disabled` do Telegram/WhatsApp).
+**Verificação:** `capturar  retomar  salvar-sessao`.
 
-## Passo 5: SOUL e ferramentas do gabi_brain
+## Passo 5: MCP esper_brain, ferramentas do gabi_brain e SOUL
 
 ```bash
 sudo -u "$HUSER" cp -p "$HOME_H/.hermes/config.yaml" "$HOME_H/.hermes/config.yaml.bak-antes-esper-brain-$D"
-sudo -u "$HUSER" -H python3 "$EB/deploy/hermes/tirar_ferramentas.py" "$HOME_H/.hermes/config.yaml"
+PYM="$HOME_H/.local/share/esper-brain-mcp/bin/python"
+sudo -u "$HUSER" -H python3 "$EB/deploy/hermes/configurar_hermes.py" "$HOME_H/.hermes/config.yaml" --python "$PYM" --eb "$EB"
 ```
 
-Simulação ok (`ainda no gabi_brain: nenhuma`; ficam `familia_vencimentos` e as `atividade_*`)? Então grave e instale o SOUL:
+Simulação ok (servidores com `esper_brain`; `ainda no gabi_brain: nenhuma`; ficam `familia_vencimentos` e as `atividade_*`; `esper_brain: acrescentado ... ferramentas: 9`)? Então:
 
 ```bash
-sudo -u "$HUSER" -H python3 "$EB/deploy/hermes/tirar_ferramentas.py" "$HOME_H/.hermes/config.yaml" --gravar
+sudo -u "$HUSER" -H python3 "$EB/deploy/hermes/configurar_hermes.py" "$HOME_H/.hermes/config.yaml" --python "$PYM" --eb "$EB" --gravar
 sudo -u "$HUSER" -H python3 "$EB/deploy/hermes/instalar_soul.py" --data "$D"
-grep -nE 'projeto_[a-z]+|familia_(listar|consultar|registrar|atualizar|propor)' "$HOME_H/.hermes/SOUL.md" | head
-systemctl restart hermes-gateway; sleep 5; systemctl is-active hermes-gateway
+grep -nE 'projeto_[a-z]+|familia_(listar|consultar|registrar|atualizar|propor)' "$HOME_H/.hermes/SOUL.md" | cut -c1-120 | head
+systemctl restart hermes-gateway; sleep 8; systemctl is-active hermes-gateway
+journalctl -u hermes-gateway --since "1 min ago" --no-pager -o cat | grep -iE 'esper_brain|mcp.*(erro|error|fail)' | tail -5
 ```
 
-O `grep` lista instruções antigas do SOUL que ainda citam ferramentas de projeto/família: me mande (só os números de linha e nomes) para eu ajustar. Depois mande `/new` no Telegram e no WhatsApp.
+O `grep` do SOUL lista instruções antigas que ainda citam ferramentas de projeto/família: me mande (número de linha e nome) para eu ajustar. Depois mande `/new` no Telegram e no WhatsApp.
 
 ## Passo 6: aceite
 
@@ -121,7 +121,7 @@ Depois do aceite, apague o tema de teste no seu clone local e dê push.
 ```bash
 sudo -u "$HUSER" cp -p "$HOME_H/.hermes/config.yaml.bak-antes-esper-brain-$D" "$HOME_H/.hermes/config.yaml"
 sudo -u "$HUSER" cp -p "$HOME_H/.hermes/SOUL.md.bak-antes-esper-brain-$D" "$HOME_H/.hermes/SOUL.md"
-rm "$HOME_H/.hermes/skills/esper-brain"
+rm "$HOME_H/.hermes/skills/esper-brain"   # o venv em ~/.local/share/esper-brain-mcp pode ficar
 systemctl restart hermes-gateway
 ```
 O clone e a chave podem ficar; para tirar o acesso, apague a deploy key no GitHub.
