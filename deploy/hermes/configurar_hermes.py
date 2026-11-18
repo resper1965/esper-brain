@@ -9,7 +9,7 @@ TIRAR = {
     "familia_listar", "familia_consultar", "familia_atualizar_contato", "familia_registrar_pessoa",
     "familia_registrar_pet", "familia_propor_documento",
 }  # ficam no gabi_brain: familia_vencimentos e atividade_* (Linear)
-ESPER = ["inicio", "ler", "buscar", "listar_temas", "criar_tema", "anotar", "acrescentar", "substituir", "gravar"]
+ESPER = ["inicio", "ler", "buscar", "listar_temas", "criar_tema", "anotar", "acrescentar", "substituir", "reescrever_hot", "gravar"]
 
 def bloco_do(linhas, nome):
     ini = [i for i, l in enumerate(linhas) if re.match(rf"^\s*{nome}:\s*$", l)]
@@ -37,6 +37,15 @@ def main(argv=None):
             tiradas.append(m.group(1)); continue
         novo.append(l)
     ja_tem = bloco_do(novo, "esper_brain")[0] is not None
+    if ja_tem:  # acrescenta ao include do esper_brain as ferramentas novas que faltarem
+        e0, efim, _ = bloco_do(novo, "esper_brain")
+        itens = [j for j in range(e0 + 1, efim) if re.match(r"^\s*-\s*\w+\s*$", novo[j])]
+        if itens:
+            tem = {novo[j].strip()[1:].strip() for j in itens}
+            pref = novo[itens[-1]][: len(novo[itens[-1]]) - len(novo[itens[-1]].lstrip())]
+            faltam = [t for t in ESPER if t not in tem]
+            novo[itens[-1] + 1:itens[-1] + 1] = [pref + "- " + t for t in faltam]
+            if faltam: print("esper_brain: ferramentas novas no include:", faltam)
     if not ja_tem:
         p = " " * ind
         bloco = [p + "esper_brain:", p + f"  command: {a.python}",

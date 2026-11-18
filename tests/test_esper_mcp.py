@@ -66,3 +66,10 @@ def test_diario_e_substituir(cerebro):
 def test_inicio(cerebro):
     t = m.inicio()
     assert "===== AGENTS.md" in t and "===== pendencias.md" in t
+
+def test_reescrever_hot(cerebro):
+    with pytest.raises(m.Recusa):
+        m.reescrever_hot("sem título")
+    m.reescrever_hot("# Hot\n\n- agenda: reunião 10h")
+    assert m.gravar("digestão").startswith("gravado:")
+    assert "reunião 10h" in (cerebro / "hot.md").read_text()

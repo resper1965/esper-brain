@@ -196,6 +196,17 @@ def substituir(caminho: str, trecho_antigo: str, trecho_novo: str) -> str:
     return f"alterado {rel} (falta gravar)"
 
 
+def reescrever_hot(texto: str) -> str:
+    """Substitui o hot.md inteiro (só ele). Usado pela digestão diária. Não grava."""
+    t = (texto or "").strip()
+    if not t.startswith("# "):
+        raise Recusa("o hot.md começa com um título '# ...'")
+    if len(t) > 8000:
+        raise Recusa("hot.md longo demais (máx. 8000 caracteres): resuma")
+    (RAIZ / "hot.md").write_text(t + "\n", encoding="utf-8")
+    return "hot.md reescrito (falta gravar)"
+
+
 def gravar(mensagem: str) -> str:
     """Commit + push do que mudou nas áreas permitidas. Só depois de 'gravado:' diga 'anotado'."""
     msg = " ".join((mensagem or "").split())[:200]
@@ -239,7 +250,7 @@ def servidor():
         w.__annotations__ = f.__annotations__
         return w
 
-    for f in (inicio, ler, buscar, listar_temas, criar_tema, anotar, acrescentar, substituir, gravar):
+    for f in (inicio, ler, buscar, listar_temas, criar_tema, anotar, acrescentar, substituir, reescrever_hot, gravar):
         srv.tool()(embrulhar(f))
     return srv
 

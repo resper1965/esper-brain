@@ -12,7 +12,7 @@
 | `pessoal/cofre/` | números de documento, CNPJ/IE/IM — **cifrado** (git-crypt); sem a chave aparece binário |
 | `projetos/` | um tema por arquivo (ou pasta, se tiver documentos); formato em `projetos/_modelo.md` |
 | `diario/AAAA/MM-DD.md` | nota do dia |
-| `skills/` | instruções portáveis: `capturar`, `retomar`, `salvar-sessao` (a digestão vem na etapa 3B) |
+| `skills/` | instruções portáveis: `capturar`, `retomar`, `salvar-sessao`, `digestao` (diária, 06:30) |
 | `tools/gravar.sh` | o único jeito de gravar: trava, pull --rebase, confere o cofre, commit, push |
 | `tools/esper_mcp.py` | MCP `esper_brain`: a porta da Gabi para o cérebro (ler, buscar, anotar, gravar), sem shell |
 | `deploy/hermes/` | instalação no Hermes da VPS (SOUL, ferramentas); passo a passo em `docs/etapa3a.md` |
