@@ -15,4 +15,5 @@ ligacoes: []             # paperless:N, gabi-finance projeto:N
 ## Perguntas em aberto
 ## Prazos
 ## Histórico
+- 2026-11-18: Sessão de teste — criação do tema, gravação e remoção de pendência funcionando
 - Teste de gravação via Telegram — 18/11/2026
