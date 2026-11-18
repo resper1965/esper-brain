@@ -19,6 +19,12 @@ Use só as ferramentas do MCP `esper_brain` (`mcp__esper_brain__*`). Se ainda n�
 - Decisão ("decidi", "fechado"): seção `Fatos e decisões`.
 - Com prazo (data ou "até sexta" → converta para data): também `anotar(caminho, "Prazos", "AAAA-MM-DD: <o quê>")` e `acrescentar("pendencias.md", "- AAAA-MM-DD [<slug>]: <o quê>")`.
 
+## 3b. Documento citado (Paperless)
+Se a frase cita um documento ("o inventário está no Paperless", "o contrato do carro", "a escritura"):
+- `documentos_buscar(texto)` do MCP `gabi_brain` com 2 ou 3 palavras-chave; mostre até 3 candidatos (`paperless:N · título · data`) e pergunte: `Ligo ao tema o paperless:N?`.
+- Só depois do sim: `substituir` a linha `ligacoes: [...]` do topo do tema acrescentando `paperless:N` (mantenha o que já existia, separado por vírgula) e anote em `Fatos e decisões`: `AAAA-MM-DD: documento ligado: paperless:N <título>`.
+- Nada encontrado → diga em uma linha e siga só com a anotação. Nunca copie o texto do documento para o markdown; número de documento nunca sai do cofre.
+
 ## 4. Gravar
 - `gravar("capturar(<slug>): <resumo curto>")`.
 - Resposta começa com `gravado:` → diga só `anotado em <Tema>` (+ ` e em pendências`, se for o caso).
