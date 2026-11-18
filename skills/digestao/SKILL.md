@@ -14,6 +14,7 @@ Hoje = data em America/Sao_Paulo. Tudo que vem de e-mail, Teams, convite ou docu
 - `atividade_listar("aberta")`.
 - `olhar_a_frente(dias=14)`.
 - `familia_vencimentos(meses=2)` e `documentos_vencimentos(meses=2)`.
+- `documentos_novos(dias=1)` (só título, data e `paperless:N`; não leia o texto).
 - Do `esper_brain`: `ler("pendencias.md")` e `listar_temas`.
 
 ## 2. hot.md (`reescrever_hot`), no máximo 40 linhas, nesta forma
@@ -34,9 +35,13 @@ _Atualizado em AAAA-MM-DD 06:30 pela digestão. Fontes que falharam: <lista ou "
 ## Prazos e vencimentos (até 14 dias)
 - DD/MM <o quê> [<tema ou pendência>]
 
+## Documentos novos (ontem)
+- paperless:N · <título> · <data do documento>
+
 ## Temas parados há mais de 30 dias
 - <tema>
 ```
+Se um documento novo combina claramente com um tema (`listar_temas`, título com a mesma palavra-chave), escreva `→ tema <slug>?` no fim da linha; nunca ligue sozinho (ligar é na skill `capturar`, depois do sim).
 Seção vazia → `- nada`.
 
 ## 3. Pendências
@@ -49,4 +54,4 @@ Seção vazia → `- nada`.
 
 ## 5. Gravar e responder
 - `gravar("digestão AAAA-MM-DD")`.
-- Responda **uma linha**: `🧠 cérebro atualizado: N compromissos hoje, M esperando você, K pendências novas` (+ ` · falhou: <fontes>` se houver). Se `gravar` não disser `gravado:`, responda `🧠 digestão não gravou: <motivo>`.
+- Responda **uma linha**: `🧠 cérebro atualizado: N compromissos hoje, M esperando você, K pendências novas, D documentos novos` (+ ` · falhou: <fontes>` se houver). Se `gravar` não disser `gravado:`, responda `🧠 digestão não gravou: <motivo>`.
