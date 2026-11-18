@@ -177,7 +177,12 @@ def acrescentar(caminho: str, texto: str) -> str:
         raise Recusa("texto longo demais")
     p.parent.mkdir(parents=True, exist_ok=True)
     atual = p.read_text(encoding="utf-8") if p.exists() else ""
-    sep = "" if not atual or atual.endswith("\n\n") else ("\n" if atual.endswith("\n") else "\n\n")
+    if not atual or atual.endswith("\n\n"):
+        sep = ""
+    elif texto.lstrip().startswith("- ") and atual.rstrip("\n").splitlines()[-1].lstrip().startswith("- "):
+        sep = "" if atual.endswith("\n") else "\n"  # item de lista logo após outro item: sem linha em branco
+    else:
+        sep = "\n" if atual.endswith("\n") else "\n\n"
     p.write_text(atual + sep + texto.rstrip("\n") + "\n", encoding="utf-8")
     return f"acrescentado em {rel} (falta gravar)"
 

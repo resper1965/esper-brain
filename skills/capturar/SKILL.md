@@ -17,7 +17,7 @@ Use só as ferramentas do MCP `esper_brain` (`mcp__esper_brain__*`). Se ainda n�
 ## 3. Anotar (data de hoje, fuso America/Sao_Paulo)
 - Ideia: `anotar(caminho, "Ideias soltas", "AAAA-MM-DD: <o que ele disse, nas palavras dele>")`.
 - Decisão ("decidi", "fechado"): seção `Fatos e decisões`.
-- Com prazo (data ou "até sexta" → converta para data): também `anotar(caminho, "Prazos", "AAAA-MM-DD: <o quê>")` e `acrescentar("pendencias.md", "- AAAA-MM-DD [<slug>]: <o quê>")`.
+- Com prazo (data ou "até sexta" → converta para data): também `anotar(caminho, "Prazos", "AAAA-MM-DD: <o quê>")` e `acrescentar("pendencias.md", "- [ ] <o quê> · vence AAAA-MM-DD · tema <slug>")`.
 
 ## 3b. Documento citado (Paperless)
 Se a frase cita um documento ("o inventário está no Paperless", "o contrato do carro", "a escritura"):

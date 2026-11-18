@@ -73,3 +73,8 @@ def test_reescrever_hot(cerebro):
     m.reescrever_hot("# Hot\n\n- agenda: reunião 10h")
     assert m.gravar("digestão").startswith("gravado:")
     assert "reunião 10h" in (cerebro / "hot.md").read_text()
+
+def test_acrescentar_item_de_lista_sem_linha_em_branco(cerebro):
+    (cerebro / "pendencias.md").write_text("# Pendências\n\n- [ ] a\n", encoding="utf-8")
+    m.acrescentar("pendencias.md", "- [ ] b")
+    assert (cerebro / "pendencias.md").read_text() == "# Pendências\n\n- [ ] a\n- [ ] b\n"
