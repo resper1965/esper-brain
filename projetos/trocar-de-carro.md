@@ -13,6 +13,7 @@ ligacoes: [paperless:97]  # paperless:N, gabi-finance projeto:N
 ## Ideias soltas
 - 2026-11-18: gostei do SUV híbrido da Toyota — ideia para substituir o HR-V
 ## Fatos e decisões
+- 2026-11-18: decidi vender a TR4 antes de comprar o carro novo
 - 2026-11-18: documento ligado: paperless:97 CRLV HR-V (GIG1554, 2018, da NESS)
 ## Perguntas em aberto
 ## Prazos

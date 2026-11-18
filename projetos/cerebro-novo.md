@@ -1,6 +1,6 @@
 ---
 tema: "Cérebro novo"
-estado: ativo            # ativo | parado | concluído
+estado: concluído            # ativo | parado | concluído
 apelidos: [esper-brain, brain-migration]
 proximo_passo: ""
 prazo:                   # AAAA-MM-DD
