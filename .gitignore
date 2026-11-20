@@ -3,3 +3,13 @@ bruto/
 .DS_Store
 __pycache__/
 .pytest_cache/
+
+# segredos — nunca versionar (o cofre git-crypt é a única exceção, e é cifrado)
+*.env
+.env
+.env.*
+*.key
+*.pem
+secret/
+secrets/
+gitcrypt.key

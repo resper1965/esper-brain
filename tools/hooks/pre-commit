@@ -1,0 +1,25 @@
+#!/bin/sh
+# pre-commit — guarda do cofre (git-crypt).
+#
+# Barra o commit se algum arquivo staged sob pessoal/cofre/ (exceto o
+# README.md, que é !filter) não estiver cifrado no índice. Protege contra o
+# caso em que o git-crypt está travado ou mal configurado e o conteúdo em
+# claro iria para o GitHub.
+#
+# Instale com: tools/hooks/instalar-hooks.sh
+
+falhou=0
+for f in $(git diff --cached --name-only --diff-filter=AM -- 'pessoal/cofre/'); do
+	[ "$f" = "pessoal/cofre/README.md" ] && continue
+	if ! git show ":$f" 2>/dev/null | head -c 16 | grep -qa 'GITCRYPT'; then
+		echo "ABORTADO: '$f' não está cifrado no índice (git-crypt travado ou mal configurado)." >&2
+		falhou=1
+	fi
+done
+
+if [ "$falhou" -ne 0 ]; then
+	echo "Destrave o cofre com 'git-crypt unlock <chave>' antes de commitar. Nada foi commitado." >&2
+	exit 1
+fi
+
+exit 0
