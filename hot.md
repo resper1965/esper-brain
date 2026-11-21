@@ -1,18 +1,17 @@
 # Hot
 
-_Atualizado em 2026-11-21 06:30 pela digestão. Fontes que falharam: gabi_finance (notas-nibo em espera)._ 
+_Atualizado em 2026-11-21 06:30 pela digestão. Fontes que falharam: gabi_finance (notas-nibo em espera, open-finance não conferida)._
 
 ## Hoje
-- 21:00 agenda (sábado)
+- nada (sábado)
 
 ## Próximos 7 dias
-- 23/11 Reunião da Diretoria Plena (18h30)
-- 24/11 Família Almeida: post de Leonardo no LinkedIn (09h)
-- 26/11 GEHC ISO 13485:2016 Audit - Security Controls (12h)
+- 23/11 18:30 Reunião da Diretoria Plena
+- 24/11 09:00 Família Almeida: post no LinkedIn
+- 26/11 12:00 GEHC ISO 13485:2016 Audit - Security Controls
 
 ## Esperando o Ricardo
 - IONIC Health: validar acessos de Luxemburgo (Fellipe) · origem email
-- n.360: SLO de produção voltou ao normal · origem email
 - Migration google-ness: aprovar mailbox · origem email
 - Google Cloud: ness-MKT billing vencido · origem email
 - Procuração: validar ajustes de Luana · origem email
@@ -26,14 +25,13 @@ _Atualizado em 2026-11-21 06:30 pela digestão. Fontes que falharam: gabi_financ
 - Cloudflare: mudança de preços em 01/12 · origem email
 - Leapfone: follow-up comercial · origem email
 - DVT e Ness: aguardar materiais para análise · origem email
-- Cyber Incident Cleverbridge: cartão 2193 comprometido · origem email
-- Barbara Alencar no Teams · origem teams
+- Cleverbridge: incidente cibernético (cartão 2193 exposto) · origem email
 - Thiago Bertuzzi no Teams · origem teams
 - Daniel Ajzen no Teams · origem teams
+- Barbara Alencar no Teams · origem teams
 
 ## Prazos e vencimentos (até 14 dias)
 - 21/11 R$ 16.000 atrasado da Ness (14 dias) · a receber
-- 25/11 Boleto Nvoip R$ 430 · a pagar
 
 ## Documentos novos (ontem)
 - nada
