@@ -78,3 +78,32 @@ def test_acrescentar_item_de_lista_sem_linha_em_branco(cerebro):
     (cerebro / "pendencias.md").write_text("# Pendências\n\n- [ ] a\n", encoding="utf-8")
     m.acrescentar("pendencias.md", "- [ ] b")
     assert (cerebro / "pendencias.md").read_text() == "# Pendências\n\n- [ ] a\n- [ ] b\n"
+
+
+def test_buscar_nao_devolve_cofre_destravado(cerebro):
+    # clone destravado: o cofre está em claro no disco
+    (cerebro / "pessoal/cofre/doc.md").write_text("CPF 123.456.789-00\n", encoding="utf-8")
+    (cerebro / "pendencias.md").write_text("# p\n- ver CPF da Giovanna\n", encoding="utf-8")
+    r = m.buscar("CPF")
+    assert "pendencias.md" in r
+    assert "pessoal/cofre" not in r and "123.456" not in r
+    with pytest.raises(m.Recusa):
+        m.buscar("CPF", "pessoal/cofre")
+    assert "123.456" in m.ler("pessoal/cofre/doc.md")  # ler por caminho explícito continua
+
+
+def test_buscar_pasta_fica_dentro_do_cerebro(cerebro):
+    irmao = cerebro.parent / (cerebro.name + "-x")
+    irmao.mkdir()
+    (irmao / "fora.md").write_text("segredo de fora\n", encoding="utf-8")
+    for pasta in ("../" + irmao.name, "..", "../..", ".git", "bruto"):
+        with pytest.raises(m.Recusa):
+            m.buscar("segredo", pasta)
+
+
+def test_gravar_caminho_com_espaco(cerebro):
+    m.criar_tema("x", "X")
+    (cerebro / "projetos/com espaco.md").write_text("# a\n", encoding="utf-8")
+    assert m.gravar("teste espaço").startswith("gravado:")
+    st = subprocess.run(["git", "-C", str(cerebro), "status", "--porcelain"], capture_output=True, text=True).stdout
+    assert st == ""

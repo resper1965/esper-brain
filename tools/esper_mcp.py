@@ -22,6 +22,8 @@ RAIZ = Path(os.environ.get("ESPER_BRAIN", Path.home() / "esper-brain")).resolve(
 ESCRITA_PASTAS = ("projetos/", "diario/", "people/", "pessoal/familia/", "pessoal/casa/", "empresas/")
 ESCRITA_ARQUIVOS = ("hot.md", "pendencias.md", "decisoes.md")
 LEITURA_PROIBIDA = (".git/", "bruto/")
+# Fora da busca: o cofre só se lê por caminho explícito (ler), nunca por busca cega.
+BUSCA_PROIBIDA = LEITURA_PROIBIDA + ("pessoal/cofre/",)
 MAX_LER = 60_000
 MAX_ESCREVER = 60_000
 MAX_ACHADOS = 40
@@ -106,13 +108,23 @@ def buscar(termo: str, pasta: str = "") -> str:
         raise Recusa("termo curto demais")
     base = RAIZ
     if pasta:
-        base = (RAIZ / pasta.strip("/")).resolve()
-        if not str(base).startswith(str(RAIZ)):
+        c = pasta.strip().strip("/")
+        if ".." in Path(c).parts:
             raise Recusa("pasta fora do cérebro")
+        base = (RAIZ / c).resolve()
+        try:
+            rel_base = base.relative_to(RAIZ).as_posix() + "/"
+        except ValueError:
+            raise Recusa("pasta fora do cérebro")
+        if any(rel_base.startswith(x) for x in BUSCA_PROIBIDA):
+            raise Recusa(f"pasta fora da busca: {rel_base}")
     achados = []
     for f in sorted(base.rglob("*.md")):
-        rel = f.relative_to(RAIZ).as_posix()
-        if rel.startswith(LEITURA_PROIBIDA) or f.read_bytes()[:9] == b"\x00GITCRYPT":
+        try:
+            rel = f.resolve().relative_to(RAIZ).as_posix()
+        except ValueError:
+            continue  # link que aponta para fora do cérebro
+        if rel.startswith(BUSCA_PROIBIDA) or f.read_bytes()[:9] == b"\x00GITCRYPT":
             continue
         for n, linha in enumerate(f.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
             if alvo in _sem_acento(linha):
