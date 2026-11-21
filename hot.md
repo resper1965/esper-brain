@@ -12,7 +12,7 @@ _Atualizado em 2026-11-21 06:30 pela digestão. Fontes que falharam: gabi_financ
 
 ## Esperando o Ricardo
 - IONIC Health: validar acessos de Luxemburgo (Fellipe) · origem email
-- n.360: SLO de produção violado · origem email
+- n.360: SLO de produção voltou ao normal · origem email
 - Migration google-ness: aprovar mailbox · origem email
 - Google Cloud: ness-MKT billing vencido · origem email
 - Procuração: validar ajustes de Luana · origem email
