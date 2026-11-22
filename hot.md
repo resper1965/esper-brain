@@ -1,13 +1,13 @@
 # Hot
 
-_Atualizado em 2026-11-21 06:30 pela digestão. Fontes que falharam: gabi_finance (notas-nibo em espera, open-finance não conferida)._
+_Atualizado em 2026-11-22 06:30 pela digestão. Fontes que falharam: gabi_finance (notas-nibo em espera, open-finance não conferida)._
 
 ## Hoje
-- nada (sábado)
+- nada (domingo)
 
 ## Próximos 7 dias
 - 23/11 18:30 Reunião da Diretoria Plena
-- 24/11 09:00 Família Almeida: post no LinkedIn
+- 24/11 09:00 Família Almeida: post de Leonardo no LinkedIn
 - 26/11 12:00 GEHC ISO 13485:2016 Audit - Security Controls
 
 ## Esperando o Ricardo
@@ -26,12 +26,14 @@ _Atualizado em 2026-11-21 06:30 pela digestão. Fontes que falharam: gabi_financ
 - Leapfone: follow-up comercial · origem email
 - DVT e Ness: aguardar materiais para análise · origem email
 - Cleverbridge: incidente cibernético (cartão 2193 exposto) · origem email
+- n.360: dependência de produção sem resposta (R2 STORAGE error) · origem email
+- OpenRouter: requisições via GMI Cloud expostas, rotacionar chaves · origem email
 - Thiago Bertuzzi no Teams · origem teams
 - Daniel Ajzen no Teams · origem teams
 - Barbara Alencar no Teams · origem teams
 
 ## Prazos e vencimentos (até 14 dias)
-- 21/11 R$ 16.000 atrasado da Ness (14 dias) · a receber
+- 21/11 R$ 16.000 atrasado da Ness (15 dias) · a receber
 
 ## Documentos novos (ontem)
 - nada
