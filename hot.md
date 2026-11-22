@@ -7,30 +7,28 @@ _Atualizado em 2026-11-22 06:30 pela digestão. Fontes que falharam: gabi_financ
 
 ## Próximos 7 dias
 - 23/11 18:30 Reunião da Diretoria Plena
-- 24/11 09:00 Família Almeida: post de Leonardo no LinkedIn
+- 24/11 09:00 Família Almeida: post no LinkedIn
 - 26/11 12:00 GEHC ISO 13485:2016 Audit - Security Controls
 
 ## Esperando o Ricardo
-- IONIC Health: validar acessos de Luxemburgo (Fellipe) · origem email
-- Migration google-ness: aprovar mailbox · origem email
-- Google Cloud: ness-MKT billing vencido · origem email
-- Procuração: validar ajustes de Luana · origem email
-- iehs.online offline (WordPress) · origem email
-- Cloudflare: certificado alupar.com.br fora do padrão · origem email
-- Proposta Bloom Capital sobre venda da Ness · origem email
-- Verificar login Cloudflare de SP · origem email
-- Acompanhar upgrade VPS Contabo · origem email
-- Verificar falha no hub (GLPI error) · origem email
-- Certificado SSL hd.bekaa.host · origem email
-- Cloudflare: mudança de preços em 01/12 · origem email
-- Leapfone: follow-up comercial · origem email
-- DVT e Ness: aguardar materiais para análise · origem email
-- Cleverbridge: incidente cibernético (cartão 2193 exposto) · origem email
-- n.360: dependência de produção sem resposta (R2 STORAGE error) · origem email
-- OpenRouter: requisições via GMI Cloud expostas, rotacionar chaves · origem email
-- Thiago Bertuzzi no Teams · origem teams
-- Daniel Ajzen no Teams · origem teams
-- Barbara Alencar no Teams · origem teams
+- n.360: R2 STORAGE falhou · email
+- OpenRouter/GMI Cloud: girar chaves · email
+- IONIC Health: validar acessos Luxemburgo · email
+- Migration google-ness: aprovar mailbox · email
+- Google Cloud: billing ness-MKT vencido · email
+- Procuração: validar ajustes Luana · email
+- iehs.online offline · email
+- Cloudflare: cert alupar.com.br · email
+- Proposta Bloom Capital venda Ness · email
+- Verificar login Cloudflare SP · email
+- Acompanhar upgrade VPS Contabo · email
+- Falha no hub (GLPI error) · email
+- Cert SSL hd.bekaa.host · email
+- Cloudflare: mudança preços 01/12 · email
+- Leapfone: follow-up · email
+- DVT e Ness: aguardar materiais · email
+- Cleverbridge: incidente cartão 2193 · email
+- Thiago · Daniel · Barbara no Teams · teams
 
 ## Prazos e vencimentos (até 14 dias)
 - 21/11 R$ 16.000 atrasado da Ness (15 dias) · a receber
