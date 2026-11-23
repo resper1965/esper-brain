@@ -269,3 +269,8 @@ def test_entrada_processar_nao_inteiro_e_ordem(cerebro):
     with pytest.raises(m.Recusa):
         m.entrada_processar(["abc"])
     assert m.entrada_ler().startswith("1.")
+
+
+def test_frontmatter_respeita_aspas_e_comentario():
+    fm = m._frontmatter('---\ncliente: "Loja #1"   # nome\nempresa: ""              # trabalho: x\nestado: ativo # c\n---\n')
+    assert (fm["cliente"], fm["empresa"], fm["estado"]) == ("Loja #1", "", "ativo")

@@ -102,7 +102,9 @@ def _frontmatter(txt: str) -> dict[str, str]:
     for linha in m.group(1).splitlines():
         if ":" in linha and not linha.startswith(" "):
             k, v = linha.split(":", 1)
-            out[k.strip()] = v.split("#", 1)[0].strip().strip('"')
+            v = v.strip()
+            q = re.match(r'"([^"]*)"', v)
+            out[k.strip()] = q.group(1) if q else v.split("#", 1)[0].strip().strip('"')
     return out
 
 
@@ -348,8 +350,7 @@ def mover_tema(caminho: str, area: str, empresa: str = "", marca: str = "", fren
     txt = p.read_text(encoding="utf-8")
     cliente = ""
     if str(area).strip().lower() == "trabalho":
-        mc = re.search(r"^cliente:[ \t]*(.*)$", txt.split("\n---\n", 1)[0], re.M)
-        cliente = mc.group(1).strip().removeprefix('"').removesuffix('"') if mc else ""
+        cliente = _frontmatter(txt).get("cliente", "")
     pasta = _pasta_do_tema(area, empresa, marca, frente, holding, cliente)
     novo = RAIZ / pasta / p.name
     if novo.resolve() == p.resolve():
