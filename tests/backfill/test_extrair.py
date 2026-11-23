@@ -72,3 +72,8 @@ def test_robo_sem_contato_e_sem_resposta_nao_vira_pessoa_nem_tema():
     assert [p["endereco"] for p in ps] == ["ana@acme.com.br"]
     ts = extrair.temas(em, [], set(), set(), remetentes={p["endereco"] for p in ps})
     assert [t["tema"] for t in ts] == ["proposta acme"]
+
+
+def test_empresa_casa_ficha_com_hifen():
+    ps = [{"endereco": "x@ionic.health", "interacoes": 3}]
+    assert extrair.empresas(ps, {"ionic-health", "ness"})[0]["ficha"] == "ionic-health"

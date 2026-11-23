@@ -79,7 +79,7 @@ def empresas(pessoas_, slugs: set[str]) -> list[dict]:
     saida = []
     for dom, a in acc.items():
         raiz = dom.split(".")[0]
-        ficha = next((s for s in sorted(slugs) if s == raiz or s.replace("-", "") == raiz), None)
+        ficha = next((s for s in sorted(slugs) if s == raiz or s.replace("-", "") == raiz or s.startswith(raiz + "-")), None)
         saida.append({"dominio": dom, "ficha": ficha, "pessoas": a["pessoas"], "interacoes": a["interacoes"]})
     return sorted(saida, key=lambda e: (-e["interacoes"], e["dominio"]))
 
