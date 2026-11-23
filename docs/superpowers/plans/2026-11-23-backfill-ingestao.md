@@ -27,7 +27,7 @@
 
 ## Correções ao spec (vindas do esquema real do gabi-brain)
 
-1. `email_msg.remetente` é **só o endereço**, em minúsculas. Não há nome nem destinatários. O nome vem de `contato_google_email` (e-mail → nome). Quem o Ricardo respondeu vem de `email_respondido(fonte_id, endereco, em)`, que é o sinal mais forte de pessoa real.
+1. `email_msg.remetente` é **só o endereço**, em minúsculas. Não há nome nem destinatários. O nome vem de `contato_google_email` (e-mail → nome). `email_respondido(fonte_id, endereco, em)` **não** é registro de resposta: guarda todo To/Cc dos enviados dos últimos 365 dias, com `em` = hora da sincronização, e uma linha sentinela `endereco=''` (gabi-brain `gabi/correio/sincronizar.py`). Serve só como sinal booleano de "o Ricardo já escreveu para essa pessoa"; a janela e as datas vêm só de `email_msg` (revisão final).
 2. `agenda_evento` não guarda participantes, só `titulo`, `organizador_nome` e `participantes_qtd`. Da agenda saem organizadores por nome (`pessoas_agenda`).
 3. `contato_graph` (M365) não tem e-mail; só entra o `contato_google_email`.
 4. O critério de pronto 3 do spec ("as 4 perguntas da etapa 4 passam a ter resposta") **não** se cumpre pelo backfill: papel do Ricardo nas empresas, holdings, PJ e mãe das filhas não estão em e-mail. Viram a Task 9 (fatos ditos pelo Ricardo).
@@ -906,7 +906,7 @@ install -d -o ricardo -g ricardo -m 700 "$B/bruto/backfill"
 
 Verificação: só "cofre conferido", sem nenhuma linha `ABERTO:`.
 
-- [ ] **Step 2: lista de domínios sob NDA** (Ricardo escreve, um por linha; fica fora do git porque `bruto/` é ignorado)
+- [ ] **Step 2: lista de domínios sob NDA** (Ricardo escreve **um domínio puro por linha**, ex. `cliente.com.br` — sem `www.`, sem `@`, sem `mailto:`; subdomínios já são cobertos; fica fora do git porque `bruto/` é ignorado; o `propor.py` recusa rodar sem esse arquivo)
 
 ```bash
 sudo -u ricardo -H nano /home/ricardo/esper-brain-backfill/bruto/backfill/nda.txt
@@ -918,13 +918,13 @@ sudo -u ricardo -H nano /home/ricardo/esper-brain-backfill/bruto/backfill/nda.tx
 umask 022
 B=/home/ricardo/esper-brain-backfill
 ( set -a; . /etc/gabi/cobrar.env; set +a; umask 077
-  python3 "$B/tools/backfill/extrair.py" --banco /var/lib/gabi-brain/gabi.db --brain "$B" --dias 90 --saida "$B/bruto/backfill/candidatos.json" )
+  python3 -B "$B/tools/backfill/extrair.py" --banco /var/lib/gabi-brain/gabi.db --brain "$B" --dias 90 --saida "$B/bruto/backfill/candidatos.json" )
 chown ricardo:ricardo "$B/bruto/backfill/candidatos.json"
 ```
 
 Ricardo manda ao Claude **só as contagens** do topo do resumo (pessoas, empresas, temas, correspondentes). Os nomes ele olha sozinho.
 
-- [ ] **Step 4: corte** — se vier gente demais, rodar de novo depois de subir o mínimo (o Claude passa o comando com `minimo` ajustado; hoje 3 e-mails ou respondido). Seguir só com o "ok" do Ricardo nas contagens (critério de pronto 1 do spec).
+- [ ] **Step 4: corte** — sempre que o `candidatos.json` for regerado, apagar antes o estado da fase 2: `rm -f /home/ricardo/esper-brain-backfill/bruto/backfill/propor-estado.json`. Se vier gente demais, rodar de novo depois de subir o mínimo (o Claude passa o comando com `minimo` ajustado; hoje 3 e-mails ou respondido). Seguir só com o "ok" do Ricardo nas contagens (critério de pronto 1 do spec).
 
 ---
 
@@ -943,7 +943,7 @@ Esperado: `1` e a linha do modelo. Sem modelo, o Claude indica um modelo barato 
 ```bash
 umask 022
 B=/home/ricardo/esper-brain-backfill
-python3 "$B/tools/backfill/propor.py" --candidatos "$B/bruto/backfill/candidatos.json" --brain "$B" \
+python3 -B "$B/tools/backfill/propor.py" --candidatos "$B/bruto/backfill/candidatos.json" --brain "$B" \
   --env /etc/gabi/openrouter.env --nda "$B/bruto/backfill/nda.txt" --teto-usd 5
 chown -R ricardo:ricardo "$B"
 ```
