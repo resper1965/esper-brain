@@ -16,7 +16,7 @@ PERGUNTAS = Path(__file__).with_name("perguntas.json")
 def _brain(tmp_path):
     b = tmp_path / "brain"
     for rel, txt in {
-        "empresas/bekaa.md": "# Bekaa\nPJ do Ricardo",
+        "empresas/bekaa.md": "# Bekaa\nempresa PJ do Ricardo",
         "pessoal/familia/sabrina.md": "# Sabrina\nesposa",
         "pessoal/casa/bens.md": "# Bens\nFord Ranger carro",
         "pessoal/cofre/segredo.md": "carro carro Ranger",
@@ -32,7 +32,7 @@ def _perguntas(tmp_path):
     rows = [
         {"n": 1, "pergunta": "Que carro?", "fonte_esperada": "pessoal/casa/bens.md", "gabarito": "x", "modo": "alguma"},
         {"n": 2, "pergunta": "Quem é a esposa?", "fonte_esperada": ["pessoal/familia/sabrina.md", "empresas/bekaa.md"], "gabarito": "x", "modo": "todas"},
-        {"n": 3, "pergunta": "Qual é a PJ do Ricardo?", "fonte_esperada": ["empresas/x.md", "empresas/bekaa.md"], "gabarito": "x", "modo": "alguma"},
+        {"n": 3, "pergunta": "Qual empresa é a PJ?", "fonte_esperada": ["empresas/x.md", "empresas/bekaa.md"], "gabarito": "x", "modo": "alguma"},
     ]
     p = tmp_path / "perguntas.json"
     p.write_text(json.dumps(rows), encoding="utf-8")
@@ -40,11 +40,11 @@ def _perguntas(tmp_path):
 
 
 def test_palavras_da_pergunta():
-    assert harness.palavras_da_pergunta("Qual empresa era a NESS Law antes?") == ["empresa", "ness", "law", "antes"]
-    assert harness.palavras_da_pergunta("Quem é a esposa do Ricardo?") == ["esposa", "ricardo"]
+    assert harness.palavras_da_pergunta("Qual empresa era a NESS Law antes?") == ["empresa", "ness", "antes"]
+    assert harness.palavras_da_pergunta("Quem é a esposa do Ricardo?") == ["esposa"]
 
 
-def test_markdown_palavra_inteira_e_cofre(tmp_path):
+def test_markdown_substring_e_cofre(tmp_path):
     out = harness.markdown(_brain(tmp_path), _perguntas(tmp_path))
     assert out[0]["fonte_bateu"] is True
     assert out[0]["paginas_achadas"] == ["pessoal/casa/bens.md"]
@@ -70,7 +70,7 @@ def test_markdown_no_repo_real():
     ps = harness.carregar_perguntas(PERGUNTAS)
     out = harness.markdown(REPO, ps)
     assert [r["n"] for r in out] == list(range(1, 11))
-    # Q1 nao e asserido: bens.md so tem "carros" (palavra inteira != "carro"); o markdown erra de verdade.
+    assert out[0]["fonte_bateu"] is True, out[0]
     for p in ps:
         for f in harness.como_lista(p["fonte_esperada"]):
             assert (REPO / f).exists(), f

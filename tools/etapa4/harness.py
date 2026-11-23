@@ -30,11 +30,11 @@ def carregar_perguntas(path):
 
 
 STOPWORDS = set("""que quem qual quais de do da dos das o a os as e ele ela dele dela tem ainda para
-alem em é eh um uma na no nas nos por com se ou foi era são sao""".split()) | {"é"}
+alem em é eh um uma na no nas nos por com se ou foi era são sao ricardo""".split()) | {"é"}
 
 
 def palavras_da_pergunta(pergunta):
-    return [t for t in re.findall(r"\w+", norm(pergunta)) if t not in STOPWORDS and len(t) > 1]
+    return [t for t in re.findall(r"\w+", norm(pergunta)) if t not in STOPWORDS and len(t) >= 4]
 
 
 def norm_pagina(s, brain=""):
@@ -79,18 +79,18 @@ def markdown(brain, perguntas):
     for p in perguntas:
         t0 = time.perf_counter()
         termos = [norm(k) for k in p.get("palavras_chave") or palavras_da_pergunta(p["pergunta"])]
-        pads = [re.compile(r"\b" + re.escape(t) + r"\b") for t in termos]
         pontos = []
         for f in sorted(brain.rglob("*.md")):
             rel = f.relative_to(brain).as_posix()
             if _ignorado(rel):
                 continue
-            txt = norm(f.read_text(encoding="utf-8", errors="ignore"))
-            n = sum(1 for r in pads if r.search(txt))
+            linhas = [norm(l) for l in f.read_text(encoding="utf-8", errors="ignore").splitlines()]
+            n = sum(1 for t in termos if any(t in l for l in linhas))  # substring, como o buscar da Gabi
             if n:
-                pontos.append((-n, rel))
+                nl = sum(1 for l in linhas if any(t in l for t in termos))
+                pontos.append((-n, -nl, rel))
         pontos.sort()
-        achadas = [rel for _, rel in pontos[:3]]
+        achadas = [rel for _, _, rel in pontos[:3]]
         saida.append(_linha(p, "markdown", achadas, (time.perf_counter() - t0) * 1000))
     return saida
 
