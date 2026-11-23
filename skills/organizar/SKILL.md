@@ -11,10 +11,10 @@ Ferramentas do MCP `esper_brain` (e, para contexto, só leitura do `gabi_brain`)
 3. Para cada grupo com tema existente (`ler` o tema):
    - Ideia → `anotar(tema, "Ideias soltas", "AAAA-MM-DD: <nas palavras dele>")`.
    - Decisão que **ele afirmou** → `anotar(tema, "Fatos e decisões", ...)`.
-   - Prazo → `anotar(tema, "Prazos", "AAAA-MM-DD: <o quê>")` e `acrescentar("pendencias.md", "- [ ] <o quê> · vence AAAA-MM-DD · tema <caminho>")`. Datas relativas ("sexta") contam da data do pedaço.
-   - `substituir` o parágrafo de **Onde estou** (2 a 4 linhas, o estado atual) e a linha `proximo_passo:` com `"<passo> (sugestão)"` quando você deduziu.
+   - Prazo → `anotar(tema, "Prazos", "AAAA-MM-DD: <o quê>")` e `acrescentar("pendencias.md", "- [ ] <o quê> · vence AAAA-MM-DD · origem <caminho>")`. Datas relativas ("sexta") contam da data do pedaço.
+   - Se **Onde estou** está vazio, `anotar(tema, "Onde estou", ...)`; senão `substituir` o parágrafo de **Onde estou** (2 a 4 linhas, o estado atual) e a linha `proximo_passo:` com `"<passo> (sugestão)"` quando você deduziu.
    - Pessoas citadas com ficha (`buscar` em `people/` e `pessoal/familia/`) → acrescente o nome em `pessoas:`.
-4. Grupo sem tema: assunto consistente (2+ pedaços ou 1 pedaço com objetivo claro) → `criar_tema(slug, tema, apelidos, area, empresa, marca, cliente, frente, holding)` e anote como no passo 3. Trabalho sem empresa sabida → crie na raiz de trabalho (`area="trabalho"`) e pergunte no resumo. Vago → deixe na entrada.
+4. Grupo sem tema: assunto consistente (2+ pedaços ou 1 pedaço com objetivo claro) → `criar_tema(slug, tema, apelidos, area, empresa, marca, cliente, frente, holding)` e anote como no passo 3. Trabalho sem empresa sabida, ou IONIC sem frente sabida → crie na raiz de trabalho (`area="trabalho"`, sem empresa) e pergunte a empresa/frente no resumo. Vago → deixe na entrada.
 5. Pedaço que estava no tema errado (correção dele) → `mover_tema(caminho, area, empresa, marca, frente, holding)`.
 6. `entrada_processar([números organizados])` e `gravar("organizar AAAA-MM-DD: <n> pedaços, <temas>")`.
 7. Só depois de `gravado:`, o resumo, **por área**, uma linha por tema (no máximo 12 linhas):

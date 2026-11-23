@@ -15,12 +15,13 @@ Ferramentas do MCP `esper_brain`. Se ainda não leu nesta conversa, chame `inici
 - `entrada_guardar(texto, palpite)` com o texto **como ele disse** (áudio: a transcrição; print: o texto lido + ` (do print)`).
 - A resposta começa com `gravado:` → responda **uma linha**: `guardei · <palpite>`.
 - Qualquer outra → `não guardei: <motivo>`.
+- Se o pedaço tem número de documento, senha/credencial ou achado de cliente sob NDA, não vai para a entrada: guarde o pedaço com essa parte trocada por `[omitido]` e diga na linha o que ficou de fora (`guardei · <palpite> · omiti o CPF`). Números vão para o cofre à mão, pelo Ricardo.
 
 ## 3. Trabalho sem empresa ou cliente
-Se o palpite é Trabalho e não dá para saber a empresa (ness, ionic, bekaa, pf) ou o cliente pelo texto, pela pessoa citada ou pelo e-mail, a mesma linha pergunta com palpite: `guardei · ness ou Bekaa? cliente Pinheiro Guimarães?`. A resposta dele também vai para a entrada (`entrada_guardar`). Marcas da ness: trustness, forense.io. IONIC: pergunte a frente (governança, produto, operação, pessoas, acionista) só se não der para deduzir.
+Se o palpite é Trabalho e não dá para saber a empresa (ness, ionic, bekaa, pf) ou o cliente pelo texto, pela pessoa citada ou pelo e-mail, a mesma linha traz **uma só pergunta**, com palpite: primeiro a empresa (`guardei · ness ou Bekaa?`); o cliente só depois, na mensagem seguinte, se ainda faltar. A resposta dele também vai para a entrada (`entrada_guardar`). Marcas da ness: trustness, forense.io. IONIC: pergunte a frente (governança, produto, operação, pessoas, acionista) só se não der para deduzir.
 
 ## 4. Pensar junto
-Pedaço com cara de decisão em aberto, dilema ou plano novo → acrescente à linha: `· quer pensar junto?`. Sim → skill `pensar-junto`.
+Pedaço com cara de decisão em aberto, dilema ou plano novo → acrescente à linha `· quer pensar junto?`, só se não houver outra pergunta na linha. Sim → skill `pensar-junto`.
 
 ## 5. Direto no tema
 Pedido explícito com tema claro ("anota no tema X: ...") pode ir direto: `anotar(caminho, "Ideias soltas" | "Fatos e decisões" | "Prazos", "AAAA-MM-DD: ...")` e `gravar`.
