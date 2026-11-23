@@ -241,7 +241,7 @@ def _arquivos_de_tema():
 
 
 def listar_temas(area: str = "", empresa: str = "") -> str:
-    """Temas: caminho | tema | área | empresa · cliente | estado | próximo passo | prazo | última mudança.
+    """Temas: caminho | tema | apelidos | área | empresa · cliente | estado | próximo passo | prazo | última mudança.
     Filtra por área (familia, trabalho, patrimonio, saude, casa, pessoal) e por empresa (ness, ionic, bekaa, pf)."""
     area, empresa = (area or "").strip().lower(), (empresa or "").strip().lower()
     linhas = []
@@ -255,7 +255,7 @@ def listar_temas(area: str = "", empresa: str = "") -> str:
             continue
         quem = " · ".join(x for x in (e, fm.get("cliente", "")) if x)
         mud = dt.date.fromtimestamp(f.stat().st_mtime).isoformat()
-        linhas.append(" | ".join([rel, fm.get("tema", "?"), a, quem, fm.get("estado", "?"),
+        linhas.append(" | ".join([rel, fm.get("tema", "?"), fm.get("apelidos", "").strip("[]"), a, quem, fm.get("estado", "?"),
                                   fm.get("proximo_passo", ""), fm.get("prazo", ""), mud]))
     if linhas:
         return "\n".join(linhas)
@@ -274,7 +274,7 @@ def criar_tema(slug: str, tema: str, apelidos: list[str] | None = None, area: st
             raise Recusa(f"já existe: {f.relative_to(RAIZ).as_posix()}")
     p = RAIZ / pasta / f"{slug}.md"
     modelo = (RAIZ / "projetos" / "_modelo.md").read_text(encoding="utf-8")
-    ap = ", ".join(a.strip() for a in (apelidos or []) if a.strip())
+    ap = ", ".join(" ".join(str(a).replace(",", " ").split()) for a in (apelidos or []) if str(a).strip())
     tema_l = " ".join(str(tema or "").replace('"', "'").split())
     txt = modelo.replace('tema: "Nome do tema"', f'tema: "{tema_l}"').replace("# Nome do tema", f"# {tema_l}")
     txt = re.sub(r"^apelidos: \[\][^\n]*", lambda _: f"apelidos: [{ap}]", txt, flags=re.M)
@@ -340,7 +340,7 @@ def substituir(caminho: str, trecho_antigo: str, trecho_novo: str) -> str:
 
 
 def mover_tema(caminho: str, area: str, empresa: str = "", marca: str = "", frente: str = "", holding: str = "") -> str:
-    """Move um tema para outra área/empresa/frente/holding e atualiza os campos. Cliente é mantido. Não grava."""
+    """Move um tema para outra área/empresa/frente/holding e atualiza os campos. Cliente é mantido em trabalho (fora dela sai, com aviso). Não grava."""
     p, rel = _rel(caminho)
     _pode_escrever(rel)
     if not rel.startswith("projetos/") or p.name.startswith("_") or p.name == "README.md" or _tema_em_pasta(p):
@@ -348,9 +348,9 @@ def mover_tema(caminho: str, area: str, empresa: str = "", marca: str = "", fren
     if not p.exists():
         raise Recusa(f"não existe: {rel}")
     txt = p.read_text(encoding="utf-8")
-    cliente = ""
-    if str(area).strip().lower() == "trabalho":
-        cliente = _frontmatter(txt).get("cliente", "")
+    cliente_atual = _frontmatter(txt).get("cliente", "")
+    cliente = cliente_atual if str(area).strip().lower() == "trabalho" else ""
+    perdido = cliente_atual if cliente_atual and not cliente else ""
     pasta = _pasta_do_tema(area, empresa, marca, frente, holding, cliente)
     novo = RAIZ / pasta / p.name
     if novo.resolve() == p.resolve():
@@ -364,7 +364,8 @@ def mover_tema(caminho: str, area: str, empresa: str = "", marca: str = "", fren
     novo.parent.mkdir(parents=True, exist_ok=True)
     novo.write_text(txt, encoding="utf-8")
     p.unlink()
-    return f"movido: {rel} → {pasta}/{p.name} (falta gravar)"
+    aviso = f" (cliente {perdido!r} saiu: só existe em trabalho)" if perdido else ""
+    return f"movido: {rel} → {pasta}/{p.name}{aviso} (falta gravar)"
 
 
 def reescrever_hot(texto: str) -> str:
@@ -403,6 +404,7 @@ def gravar(mensagem: str) -> str:
     return saida
 
 
+DOC_NUM = re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b|\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b")
 ENTRADA_TOPO = "# Entrada\n\nPedaços soltos esperando a consolidação (skill `organizar`). Uma linha por pedaço.\n"
 
 
@@ -421,11 +423,13 @@ def entrada_guardar(texto: str, palpite: str = "") -> str:
     t, p = " ".join((texto or "").split()), " ".join((palpite or "").split())
     if not t or len(t) > 2000:
         raise Recusa("texto vazio ou longo demais (máx. 2000 caracteres)")
+    if DOC_NUM.search(t):
+        raise Recusa("parece número de documento (CPF/CNPJ): troque por [omitido]; número vai para o cofre")
     linha = f"- {_agora():%Y-%m-%d %H:%M} · {t}" + (f" · palpite: {p}" if p else "")
     f, linhas, itens = _itens_entrada()
     base = "\n".join(linhas).rstrip("\n") if linhas else ENTRADA_TOPO.rstrip("\n")
     f.write_text(base + ("\n" if itens else "\n\n") + linha + "\n", encoding="utf-8")
-    return gravar(f"entrada: {t[:60]}")
+    return gravar("entrada: novo pedaço")
 
 
 def entrada_ler() -> str:

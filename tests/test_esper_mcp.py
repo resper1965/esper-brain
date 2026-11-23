@@ -274,3 +274,17 @@ def test_entrada_processar_nao_inteiro_e_ordem(cerebro):
 def test_frontmatter_respeita_aspas_e_comentario():
     fm = m._frontmatter('---\ncliente: "Loja #1"   # nome\nempresa: ""              # trabalho: x\nestado: ativo # c\n---\n')
     assert (fm["cliente"], fm["empresa"], fm["estado"]) == ("Loja #1", "", "ativo")
+
+
+def test_revisao_final(cerebro):
+    m.criar_tema("q", "Q", ["a\nestado: concluído\n---", "b"], area="trabalho", empresa="ness", cliente="Alupar")
+    fm = m._frontmatter((cerebro / "projetos/trabalho/ness/q.md").read_text())
+    assert fm["estado"] == "ativo" and fm["apelidos"] == "[a estado: concluído ---, b]"
+    assert "| a estado: concluído ---, b |" in m.listar_temas()
+    assert "cliente 'Alupar' saiu" in m.mover_tema("projetos/trabalho/ness/q.md", area="casa")
+    for doc in ("cpf 123.456.789-09", "cnpj 12.345.678/0001-90", "12345678909"):
+        with pytest.raises(m.Recusa):
+            m.entrada_guardar(doc)
+    m.entrada_guardar("pedaço secreto")
+    log = subprocess.run(["git", "-C", str(cerebro), "log", "-1", "--format=%s"], capture_output=True, text=True).stdout
+    assert "secreto" not in log

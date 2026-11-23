@@ -8,7 +8,7 @@ cerebro: ""                  # repositório do cérebro da própria empresa, se 
 ---
 # Baalbeck Participações
 
-Só dados básicos. A gestão da empresa vive no cérebro dela, não aqui.
+Só dados básicos. Os bens e assuntos da holding ficam em `projetos/patrimonio/baalbeck/`.
 
 ## Cadastro
 - CNPJ, IE, IM: ver `pessoal/cofre/empresas.md`

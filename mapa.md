@@ -8,7 +8,7 @@
 | `people/` | uma ficha por pessoa; `_aprovados.md` diz quem a Gabi escuta |
 | `pessoal/familia/` | fichas da família (sem número de documento) |
 | `pessoal/casa/` | pets, bens, casa, Home Assistant |
-| `empresas/<nome>.md` | uma ficha cadastral por empresa (sócios, quem assina, contrato social no Paperless). ficha cadastral; assuntos de trabalho em `projetos/trabalho/<empresa>/` até a empresa ter cérebro próprio |
+| `empresas/<nome>.md` | uma ficha cadastral por empresa (sócios, quem assina, contrato social no Paperless); assuntos de trabalho ficam em `projetos/trabalho/<empresa>/` até a empresa ter cérebro próprio |
 | `pessoal/cofre/` | números de documento, CNPJ/IE/IM — **cifrado** (git-crypt); sem a chave aparece binário |
 | `projetos/<área>/` | temas por área: `familia/`, `trabalho/` (`ness/`, `ionic/<frente>/`, `bekaa/`, `pf/`), `patrimonio/` (`baalbeck/`, `fakiha/`), `saude/`, `casa/`, `pessoal/`; formato em `projetos/_modelo.md` |
 | `entrada.md` | caixa de entrada: pedaços soltos com palpite, até a consolidação (skill `organizar`, 21:30) |
