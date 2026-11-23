@@ -1,0 +1,97 @@
+[
+ {
+  "n": 1,
+  "pergunta": "Que carro o Ricardo tem?",
+  "fonte_esperada": "pessoal/casa/bens.md",
+  "gabarito": "Ford Ranger Limited diesel 2014",
+  "palavras_chave": [],
+  "modo": "alguma"
+ },
+ {
+  "n": 2,
+  "pergunta": "Quem é a esposa do Ricardo?",
+  "fonte_esperada": "pessoal/familia/sabrina-barbosa-de-barros.md",
+  "gabarito": "Sabrina Barbosa de Barros",
+  "palavras_chave": [],
+  "modo": "alguma"
+ },
+ {
+  "n": 3,
+  "pergunta": "Quem são as filhas dele?",
+  "fonte_esperada": [
+   "pessoal/familia/louise-lavrik-esper.md",
+   "pessoal/familia/giovanna-della-torre-esper.md"
+  ],
+  "gabarito": "Louise e Giovanna",
+  "palavras_chave": [],
+  "modo": "todas"
+ },
+ {
+  "n": 4,
+  "pergunta": "Quais empresas são holdings patrimoniais?",
+  "fonte_esperada": [
+   "empresas/baalbeck.md",
+   "empresas/fakiha.md"
+  ],
+  "gabarito": "Baalbeck e Fakiha",
+  "palavras_chave": [],
+  "modo": "todas"
+ },
+ {
+  "n": 5,
+  "pergunta": "Qual empresa era a NESS Law antes?",
+  "fonte_esperada": "empresas/secops.md",
+  "gabarito": "SECOPS (ex-NESS Law)",
+  "palavras_chave": [],
+  "modo": "alguma"
+ },
+ {
+  "n": 6,
+  "pergunta": "Qual é a PJ do Ricardo?",
+  "fonte_esperada": "empresas/bekaa.md",
+  "gabarito": "Bekaa",
+  "palavras_chave": [],
+  "modo": "alguma"
+ },
+ {
+  "n": 7,
+  "pergunta": "Giovanna é filha de qual mãe?",
+  "fonte_esperada": "pessoal/familia/giovanna-della-torre-esper.md",
+  "gabarito": "Carla Noce Della Torre",
+  "palavras_chave": [],
+  "modo": "alguma"
+ },
+ {
+  "n": 8,
+  "pergunta": "Em qual empresa o Ricardo é CISO e cofundador?",
+  "fonte_esperada": "empresas/ionic-health.md",
+  "gabarito": "IONIC Health (CISO e cofundador)",
+  "palavras_chave": [],
+  "modo": "alguma"
+ },
+ {
+  "n": 9,
+  "pergunta": "Quem na família tem ficha, além da esposa e das filhas?",
+  "fonte_esperada": [
+   "pessoal/familia/adriana-sforcini-lavrik-esper.md",
+   "pessoal/familia/benedita.md",
+   "pessoal/familia/caiam.md",
+   "pessoal/familia/carla-noce-della-torre.md",
+   "pessoal/familia/chafic.md",
+   "pessoal/familia/salim.md",
+   "pessoal/familia/sandra.md",
+   "pessoal/familia/tuti.md"
+  ],
+  "gabarito": "Sandra, Salim, Chafic, Benedita, Caiam, Tuti, Carla, Adriana",
+  "palavras_chave": [],
+  "modo": "alguma"
+ },
+ {
+  "n": 10,
+  "pergunta": "O que ainda está pendente para resolver?",
+  "fonte_esperada": "pendencias.md",
+  "gabarito": "Lista de pendências abertas (ex.: renovar passaporte)",
+  "palavras_chave": [],
+  "modo": "alguma"
+ }
+]
