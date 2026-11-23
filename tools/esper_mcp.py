@@ -317,6 +317,32 @@ def substituir(caminho: str, trecho_antigo: str, trecho_novo: str) -> str:
     return f"alterado {rel} (falta gravar)"
 
 
+def mover_tema(caminho: str, area: str, empresa: str = "", marca: str = "", frente: str = "", holding: str = "") -> str:
+    """Move um tema para outra área/empresa/frente/holding e atualiza os campos. Cliente é mantido. Não grava."""
+    p, rel = _rel(caminho)
+    _pode_escrever(rel)
+    if not rel.startswith("projetos/") or p.name.startswith("_") or p.name == "README.md":
+        raise Recusa("só move tema em arquivo dentro de projetos/ (tema em pasta: mova pelo clone)")
+    if not p.exists():
+        raise Recusa(f"não existe: {rel}")
+    txt = p.read_text(encoding="utf-8")
+    cliente = _frontmatter(txt).get("cliente", "") if str(area).strip().lower() == "trabalho" else ""
+    pasta = _pasta_do_tema(area, empresa, marca, frente, holding, cliente)
+    novo = RAIZ / pasta / p.name
+    if novo.resolve() == p.resolve():
+        raise Recusa("o tema já está nesse lugar")
+    if novo.exists():
+        raise Recusa(f"já existe: {pasta}/{p.name}")
+    empresa_n = (empresa or "").strip().lower()
+    for k, v in (("area", area), ("empresa", empresa_n), ("marca", marca), ("papel", EMPRESAS.get(empresa_n, "")),
+                 ("frente", frente), ("holding", holding), ("cliente", cliente)):
+        txt = _campo(txt, k, str(v or "").strip().lower() if k in ("area", "marca", "frente", "holding") else v)
+    novo.parent.mkdir(parents=True, exist_ok=True)
+    novo.write_text(txt, encoding="utf-8")
+    p.unlink()
+    return f"movido: {rel} → {pasta}/{p.name} (falta gravar)"
+
+
 def reescrever_hot(texto: str) -> str:
     """Substitui o hot.md inteiro (só ele). Usado pela digestão diária. Não grava."""
     t = (texto or "").strip()
@@ -371,7 +397,8 @@ def servidor():
         w.__annotations__ = f.__annotations__
         return w
 
-    for f in (inicio, ler, buscar, listar_temas, criar_tema, anotar, acrescentar, substituir, reescrever_hot, gravar):
+    for f in (inicio, ler, buscar, listar_temas, criar_tema, mover_tema, anotar, acrescentar, substituir, reescrever_hot,
+              gravar):
         srv.tool()(embrulhar(f))
     return srv
 

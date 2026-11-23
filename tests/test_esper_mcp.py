@@ -178,3 +178,27 @@ def test_listar_temas_filtra_por_area_e_empresa(cerebro):
     assert "Tema A" in so_trab and "Tema C" not in so_trab
     assert "Tema B" not in m.listar_temas(empresa="ionic")
     assert m.listar_temas(area="saude") == "nenhum tema nessa área"
+
+
+def test_mover_tema(cerebro):
+    m.criar_tema("armazem", "Armazém", area="trabalho", empresa="ness", marca="trustness")
+    r = m.mover_tema("projetos/trabalho/ness/armazem.md", area="patrimonio", holding="fakiha")
+    assert "projetos/patrimonio/fakiha/armazem.md" in r
+    assert not (cerebro / "projetos/trabalho/ness/armazem.md").exists()
+    fm = m._frontmatter((cerebro / "projetos/patrimonio/fakiha/armazem.md").read_text())
+    assert (fm["area"], fm["holding"], fm["empresa"], fm["marca"], fm["papel"]) == ("patrimonio", "fakiha", "", "", "")
+    with pytest.raises(m.Recusa):
+        m.mover_tema("projetos/patrimonio/fakiha/armazem.md", area="patrimonio", holding="fakiha")  # já está lá
+    with pytest.raises(m.Recusa):
+        m.mover_tema("hot.md", area="casa")
+    with pytest.raises(m.Recusa):
+        m.mover_tema("projetos/_modelo.md", area="casa")
+    assert "Armazém" in m.listar_temas(area="patrimonio")
+
+
+def test_gravar_tema_movido(cerebro):
+    m.criar_tema("x", "X", area="casa"); m.gravar("cria x")
+    m.mover_tema("projetos/casa/x.md", area="pessoal")
+    assert m.gravar("move x").startswith("gravado:")
+    st = subprocess.run(["git", "-C", str(cerebro), "status", "--porcelain"], capture_output=True, text=True).stdout
+    assert st.strip() == ""
