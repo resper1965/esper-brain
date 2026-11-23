@@ -12,7 +12,7 @@ def _publicar(repo):
     return subprocess.run(["bash", "tools/backfill/publicar.sh"], cwd=repo, capture_output=True, text=True)
 
 
-def test_publicar_bloqueia_pasta_nova_com_cpf_e_publica_limpo(tmp_path):
+def _repo(tmp_path):
     remote = tmp_path / "remote.git"
     _git(tmp_path, "init", "-q", "--bare", str(remote))
 
@@ -34,6 +34,21 @@ def test_publicar_bloqueia_pasta_nova_com_cpf_e_publica_limpo(tmp_path):
     _git(repo, "remote", "add", "origin", str(remote))
     _git(repo, "push", "-q", "origin", "main")
     _git(repo, "checkout", "-q", "-b", "backfill")
+    return repo, remote
+
+
+def test_publicar_bloqueia_arquivo_ja_no_indice(tmp_path):
+    repo, _ = _repo(tmp_path)
+    (repo / "projetos" / "nota.md").write_text("CPF 123.456.789-09", encoding="utf-8")
+    _git(repo, "add", "projetos/nota.md")
+
+    r = _publicar(repo)
+    assert r.returncode != 0
+    assert _git(repo, "rev-list", "--count", "main..backfill").strip() == "0"
+
+
+def test_publicar_bloqueia_pasta_nova_com_cpf_e_publica_limpo(tmp_path):
+    repo, remote = _repo(tmp_path)
 
     pasta = repo / "projetos" / "novo tema"
     pasta.mkdir()

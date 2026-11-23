@@ -39,6 +39,8 @@ def main(caminhos) -> int:
         p = Path(c)
         if not p.exists():
             print(f"AVISO: não encontrado: {c}"); ruim = 1; continue
+        if not (p.is_dir() or p.is_file()):
+            print(f"AVISO: não é arquivo: {c}"); ruim = 1; continue
         arquivos = sorted(f for f in p.rglob("*") if f.is_file()) if p.is_dir() else [p]
         for f in arquivos:
             if _no_cofre(str(f)):

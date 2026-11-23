@@ -46,3 +46,12 @@ def test_cli_caminho_ausente_bloqueia(tmp_path):
     r = subprocess.run([sys.executable, str(script), "people/nao_existe.md"], cwd=tmp_path, capture_output=True, text=True)
     assert r.returncode == 1
     assert "AVISO: não encontrado: people/nao_existe.md" in r.stdout
+
+def test_cli_nao_arquivo_nem_pasta_bloqueia(tmp_path):
+    import os
+    fifo = tmp_path / "people" / "pipe"; fifo.parent.mkdir()
+    os.mkfifo(fifo)
+    script = Path(varrer.__file__)
+    r = subprocess.run([sys.executable, str(script), "people/pipe"], cwd=tmp_path, capture_output=True, text=True)
+    assert r.returncode == 1
+    assert "AVISO: não é arquivo: people/pipe" in r.stdout
