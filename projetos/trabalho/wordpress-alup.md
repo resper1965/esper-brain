@@ -6,6 +6,13 @@ proximo_passo: ""
 prazo: ""
 pessoas: "eestevez@alup.io, tasantos@alup.io"
 ligacoes: ""
+area: "trabalho"
+empresa: ""
+marca: ""
+papel: ""
+frente: ""
+holding: ""
+cliente: "Alupar"
 ---
 # wordpress alup
 

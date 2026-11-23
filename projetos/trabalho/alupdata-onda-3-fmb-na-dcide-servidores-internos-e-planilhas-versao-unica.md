@@ -6,6 +6,13 @@ proximo_passo: ""
 prazo: ""
 pessoas: "lgmarques@alupar.com.br"
 ligacoes: ""
+area: "trabalho"
+empresa: ""
+marca: ""
+papel: ""
+frente: ""
+holding: ""
+cliente: "Alupar"
 ---
 # alupdata, onda 3: fmb na dcide, servidores internos e planilhas (versão única)
 

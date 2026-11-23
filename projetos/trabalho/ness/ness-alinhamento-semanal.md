@@ -6,6 +6,13 @@ proximo_passo: ""
 prazo: ""
 pessoas: "agsilva@ness.com.br"
 ligacoes: ""
+area: "trabalho"
+empresa: "ness"
+marca: ""
+papel: "CEO"
+frente: ""
+holding: ""
+cliente: ""
 ---
 # Ness: alinhamento semanal
 
