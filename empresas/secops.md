@@ -3,7 +3,7 @@ razao_social: ""
 nome_fantasia: "SECOPS"
 situacao: ativa              # ativa | inativa | baixada
 vinculo: participacao
-papel_do_ricardo: ""         # ex.: CEO e sócio; sócio, 10%
+papel_do_ricardo: "CEO e DTO (não consta no contrato social)"
 cerebro: ""                  # repositório do cérebro da própria empresa, se existir
 ---
 # SECOPS

@@ -3,7 +3,7 @@ razao_social: ""
 nome_fantasia: "ness. Processos e Tecnologia"
 situacao: ativa              # ativa | inativa | baixada
 vinculo: tocada
-papel_do_ricardo: ""         # ex.: CEO e sócio; sócio, 10%
+papel_do_ricardo: "CEO e sócio"
 cerebro: ""                  # repositório do cérebro da própria empresa, se existir
 ---
 # ness. Processos e Tecnologia

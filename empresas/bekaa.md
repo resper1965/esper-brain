@@ -3,7 +3,7 @@ razao_social: ""
 nome_fantasia: "Bekaa Trusted Advisors"
 situacao: ativa              # ativa | inativa | baixada
 vinculo: tocada
-papel_do_ricardo: ""         # ex.: CEO e sócio; sócio, 10%
+papel_do_ricardo: "titular — é a PJ do Ricardo"
 cerebro: ""                  # repositório do cérebro da própria empresa, se existir
 ---
 # Bekaa Trusted Advisors
