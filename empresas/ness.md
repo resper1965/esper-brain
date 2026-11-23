@@ -27,3 +27,8 @@ Só dados básicos. A gestão da empresa vive no cérebro dela, não aqui.
 
 ## Histórico
 - AAAA-MM-DD — (alteração contratual, entrada/saída de sócio, mudança de nome)
+
+## Proposto pelo backfill
+
+- Domínio de e-mail corporativo: ness.com.br
+- Contatos de e-mail da empresa: agsilva@ness.com.br, dajzen@ness.com.br, galves@ness.com.br, loliveira@ness.com.br, myoshida@ness.com.br, balencar@ness.com.br, gpaz@ness.com.br, jmachado@ness.com.br, rmouro@ness.com.br, rogerio@ness.com.br
