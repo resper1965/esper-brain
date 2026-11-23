@@ -61,3 +61,14 @@ def test_respondido_sem_email_nao_qualifica_e_nunca_zero_interacoes():
     ps = extrair.pessoas(emails, {"x@y.com", "z@y.com", ""}, {}, set())
     assert [p["endereco"] for p in ps] == ["x@y.com"] and all(p["interacoes"] >= 1 for p in ps)
     assert ps[0]["ultima"] == "2026-11-01"
+
+
+def test_robo_sem_contato_e_sem_resposta_nao_vira_pessoa_nem_tema():
+    em = [{"conta": "c", "remetente": "monitor@ness.com.br", "assunto": "[ness.os] monitor do hub com falha",
+           "recebida_em": f"2026-11-{d:02d}T10:00:00Z", "classe": "normal", "lista": 0} for d in range(1, 8)]
+    em += [{"conta": "c", "remetente": "ana@acme.com.br", "assunto": "Proposta Acme",
+            "recebida_em": f"2026-11-{d:02d}T10:00:00Z", "classe": "normal", "lista": 0} for d in range(1, 4)]
+    ps = extrair.pessoas(em, set(), {"ana@acme.com.br": "Ana Souza"}, set())
+    assert [p["endereco"] for p in ps] == ["ana@acme.com.br"]
+    ts = extrair.temas(em, [], set(), set(), remetentes={p["endereco"] for p in ps})
+    assert [t["tema"] for t in ts] == ["proposta acme"]

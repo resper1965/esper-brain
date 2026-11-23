@@ -44,6 +44,9 @@ def pessoas(emails, respondidos: set[str], contatos, proprios, minimo=3) -> list
     saida = []
     for end, a in acc.items():
         respondido = end in respondidos          # só sinal: email_respondido não tem data de resposta confiável
+        conhecido = respondido or bool(contatos.get(end))
+        if not conhecido:                        # robô ou newsletter: nunca escrito pelo Ricardo nem nos contatos
+            continue
         if len(a["datas"]) < minimo and not (respondido and a["datas"]):
             continue
         datas = sorted(a["datas"])
@@ -81,11 +84,14 @@ def empresas(pessoas_, slugs: set[str]) -> list[dict]:
     return sorted(saida, key=lambda e: (-e["interacoes"], e["dominio"]))
 
 
-def temas(emails, projetos, slugs_temas: set[str], proprios, minimo_dias=3) -> list[dict]:
+def temas(emails, projetos, slugs_temas: set[str], proprios, minimo_dias=3, remetentes: set[str] | None = None) -> list[dict]:
+    """`remetentes`: se dado, só e-mails dessas pessoas (ou das contas do Ricardo) viram tema."""
     acc = defaultdict(lambda: {"dias": set(), "pessoas": set()})
     for e in emails:
         end = e["remetente"]
         if e["lista"] or e["classe"] == "lixo" or e_automatico(end):
+            continue
+        if remetentes is not None and end not in remetentes and end not in proprios:
             continue
         t = normalizar_assunto(e["assunto"])
         if len(t) >= 4:
@@ -122,7 +128,8 @@ def extrair(banco: str, brain: str, dias: int, hoje: date, paperless_cfg=None) -
     c = {"gerado_em": hoje.isoformat(), "janela_desde": desde, "pessoas": ps,
          "pessoas_agenda": pessoas_agenda(fontes.agenda(con, desde)),
          "empresas": empresas(ps, _slugs(b / "empresas")),
-         "temas": temas(em, fontes.projetos(con), _slugs(b / "projetos"), proprios),
+         "temas": temas(em, fontes.projetos(con), _slugs(b / "projetos"), proprios,
+                        remetentes={p["endereco"] for p in ps}),
          "correspondentes": []}
     if paperless_cfg:
         c["correspondentes"] = paperless.correspondentes(paperless_cfg["url"], paperless_cfg["token"], desde)
