@@ -140,16 +140,17 @@ def _pasta_do_tema(area: str, empresa: str = "", marca: str = "", frente: str = 
 
 
 def _campo(txt: str, chave: str, valor: str) -> str:
-    """Troca (ou insere antes do fim do frontmatter) a linha `chave: "valor"`."""
-    v = str(valor or "").replace('"', "'")
+    """Troca (ou insere no fim do frontmatter) a linha `chave: "valor"`. Só mexe no bloco do frontmatter."""
+    v = " ".join(str(valor or "").replace('"', "'").split())
     linha = f'{chave}: "{v}"'
-    novo, n = re.subn(rf"^{re.escape(chave)}:[^\n]*$", lambda _: linha, txt, count=1, flags=re.M)
-    if n:
-        return novo
-    m_ = re.match(r"^---\n.*?\n(?=---\n)", txt, re.S)
+    m_ = re.match(r"^---\n(.*?\n)---\n", txt, re.S)
     if not m_:
         raise Recusa("arquivo sem frontmatter")
-    return txt[: m_.end()] + linha + "\n" + txt[m_.end():]
+    cab = m_.group(1)
+    novo, n = re.subn(rf"^{re.escape(chave)}:[^\n]*$", lambda _: linha, cab, count=1, flags=re.M)
+    if not n:
+        novo = cab + linha + "\n"
+    return "---\n" + novo + txt[m_.end(1):]
 
 
 # ---------- ferramentas (funções puras, testáveis sem MCP) ----------
@@ -211,12 +212,28 @@ def buscar(termo: str, pasta: str = "") -> str:
     return "\n".join(achados) or "nada encontrado"
 
 
+def _tema_em_pasta(p: Path) -> Path | None:
+    """A pasta-tema (tem README.md e nome não estrutural) que contém p, ou None."""
+    base = RAIZ / "projetos"
+    estrutural = set(AREAS) | set(EMPRESAS) | set(FRENTES_IONIC) | set(HOLDINGS)
+    for d in p.parents:
+        if d == base or base not in d.parents:
+            break
+        if d.name not in estrutural and (d / "README.md").exists():
+            return d
+    return None
+
+
 def _arquivos_de_tema():
     base = RAIZ / "projetos"
     for f in sorted(base.rglob("*.md")):
         if f.name.startswith("_"):
             continue
-        if f.name != "README.md" and (f.parent / "README.md").exists():
+        pasta = _tema_em_pasta(f)
+        if pasta is None:
+            if f.name == "README.md":
+                continue  # README de área/empresa/etc. não é tema
+        elif f != pasta / "README.md":
             continue  # anexo dentro de um tema em pasta
         yield f
 
@@ -256,8 +273,9 @@ def criar_tema(slug: str, tema: str, apelidos: list[str] | None = None, area: st
     p = RAIZ / pasta / f"{slug}.md"
     modelo = (RAIZ / "projetos" / "_modelo.md").read_text(encoding="utf-8")
     ap = ", ".join(a.strip() for a in (apelidos or []) if a.strip())
-    txt = modelo.replace('tema: "Nome do tema"', f'tema: "{tema}"').replace("# Nome do tema", f"# {tema}")
-    txt = re.sub(r"^apelidos: \[\][^\n]*", f"apelidos: [{ap}]", txt, flags=re.M)
+    tema_l = " ".join(str(tema or "").replace('"', "'").split())
+    txt = modelo.replace('tema: "Nome do tema"', f'tema: "{tema_l}"').replace("# Nome do tema", f"# {tema_l}")
+    txt = re.sub(r"^apelidos: \[\][^\n]*", lambda _: f"apelidos: [{ap}]", txt, flags=re.M)
     empresa_n = (empresa or "").strip().lower()
     for k, v in (("area", area), ("empresa", empresa_n), ("marca", marca), ("cliente", cliente),
                  ("papel", EMPRESAS.get(empresa_n, "")), ("frente", frente), ("holding", holding)):
@@ -323,12 +341,15 @@ def mover_tema(caminho: str, area: str, empresa: str = "", marca: str = "", fren
     """Move um tema para outra área/empresa/frente/holding e atualiza os campos. Cliente é mantido. Não grava."""
     p, rel = _rel(caminho)
     _pode_escrever(rel)
-    if not rel.startswith("projetos/") or p.name.startswith("_") or p.name == "README.md":
+    if not rel.startswith("projetos/") or p.name.startswith("_") or p.name == "README.md" or _tema_em_pasta(p):
         raise Recusa("só move tema em arquivo dentro de projetos/ (tema em pasta: mova pelo clone)")
     if not p.exists():
         raise Recusa(f"não existe: {rel}")
     txt = p.read_text(encoding="utf-8")
-    cliente = _frontmatter(txt).get("cliente", "") if str(area).strip().lower() == "trabalho" else ""
+    cliente = ""
+    if str(area).strip().lower() == "trabalho":
+        mc = re.search(r"^cliente:[ \t]*(.*)$", txt.split("\n---\n", 1)[0], re.M)
+        cliente = mc.group(1).strip().removeprefix('"').removesuffix('"') if mc else ""
     pasta = _pasta_do_tema(area, empresa, marca, frente, holding, cliente)
     novo = RAIZ / pasta / p.name
     if novo.resolve() == p.resolve():
@@ -415,19 +436,23 @@ def entrada_ler() -> str:
 def entrada_processar(numeros: list[int]) -> str:
     """Tira da entrada os pedaços já organizados e registra no diário do dia (## Entrada processada HH:MM). Não grava."""
     f, linhas, itens = _itens_entrada()
-    nums = sorted({int(n) for n in (numeros or [])})
+    try:
+        nums = sorted({int(n) for n in (numeros or [])})
+    except (TypeError, ValueError):
+        raise Recusa("os números da entrada devem ser inteiros")
     if not nums or any(n < 1 or n > len(itens) for n in nums):
         raise Recusa(f"números fora da entrada (1 a {len(itens)})")
     tirar = [itens[n - 1] for n in nums]
     feitos = [linhas[i] for i in tirar]
-    resto = [l for i, l in enumerate(linhas) if i not in set(tirar)]
-    f.write_text("\n".join(resto).rstrip("\n") + "\n", encoding="utf-8")
     agora = _agora()
     d = RAIZ / "diario" / f"{agora:%Y}" / f"{agora:%m-%d}.md"
     d.parent.mkdir(parents=True, exist_ok=True)
     atual = d.read_text(encoding="utf-8") if d.exists() else f"# {agora:%Y-%m-%d}\n"
     d.write_text(atual.rstrip("\n") + f"\n\n## Entrada processada {agora:%H:%M}\n" + "\n".join(feitos) + "\n",
                  encoding="utf-8")
+    sai = set(tirar)
+    resto = [l for i, l in enumerate(linhas) if i not in sai]
+    f.write_text("\n".join(resto).rstrip("\n") + "\n", encoding="utf-8")
     return f"processadas {len(feitos)} (falta gravar)"
 
 

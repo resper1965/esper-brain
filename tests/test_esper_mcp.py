@@ -224,3 +224,48 @@ def test_entrada(cerebro, monkeypatch):
         m.entrada_guardar("   ")
     m.entrada_processar([1])
     assert m.entrada_ler() == "entrada vazia"
+
+
+def test_cliente_com_cerquilha_sobrevive_ao_mover(cerebro):
+    m.criar_tema("loja", "Loja", area="trabalho", empresa="ness", cliente="Loja #1")
+    m.mover_tema("projetos/trabalho/ness/loja.md", area="trabalho", empresa="bekaa")
+    t = (cerebro / "projetos/trabalho/bekaa/loja.md").read_text()
+    assert 'cliente: "Loja #1"' in t
+
+
+def test_tema_em_pasta_e_readme_estrutural(cerebro):
+    (cerebro / "projetos/casa/reforma/sub").mkdir(parents=True)
+    (cerebro / "projetos/casa/reforma/README.md").write_text('---\ntema: "Reforma"\n---\n# R\n', encoding="utf-8")
+    (cerebro / "projetos/casa/reforma/orc.md").write_text("# orçamento\n", encoding="utf-8")
+    (cerebro / "projetos/casa/reforma/sub/x.md").write_text("# x\n", encoding="utf-8")
+    (cerebro / "projetos/familia").mkdir()
+    (cerebro / "projetos/familia/README.md").write_text("# Família\n", encoding="utf-8")
+    m.criar_tema("t", "Tema T", area="familia")
+    lista = m.listar_temas()
+    assert "projetos/casa/reforma/README.md" in lista and "Tema T" in lista
+    assert "orc.md" not in lista and "sub/x.md" not in lista and "familia/README.md" not in lista
+    for c in ("projetos/casa/reforma/orc.md", "projetos/casa/reforma/sub/x.md", "projetos/casa/reforma/README.md"):
+        with pytest.raises(m.Recusa):
+            m.mover_tema(c, area="pessoal")
+    assert (cerebro / "projetos/casa/reforma/orc.md").exists()
+
+
+def test_campo_so_no_frontmatter_e_sem_quebra_de_linha(cerebro):
+    txt = '---\ntema: "T"\n---\n# T\npapel: corpo\n'
+    novo = m._campo(txt, "papel", "CEO")
+    assert 'papel: corpo' in novo and novo.index('papel: "CEO"') < novo.index("# T")
+    novo = m._campo(txt, "cliente", "X\r\narea: pessoal")
+    assert novo.count("\n") == txt.count("\n") + 1 and 'cliente: "X area: pessoal"' in novo
+
+
+def test_criar_tema_escapa_tema_e_apelidos(cerebro):
+    m.criar_tema("q", 'Tema "aspas"', ["a\\1"], area="casa")
+    t = (cerebro / "projetos/casa/q.md").read_text()
+    assert m._frontmatter(t)["tema"] == "Tema 'aspas'" and "[a\\1]" in t
+
+
+def test_entrada_processar_nao_inteiro_e_ordem(cerebro):
+    m.entrada_guardar("um")
+    with pytest.raises(m.Recusa):
+        m.entrada_processar(["abc"])
+    assert m.entrada_ler().startswith("1.")
