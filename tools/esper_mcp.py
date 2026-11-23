@@ -15,12 +15,14 @@ import re
 import subprocess
 import unicodedata
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 RAIZ = Path(os.environ.get("ESPER_BRAIN", Path.home() / "esper-brain")).resolve()
 
 # Onde a Gabi pode escrever (prefixos relativos à raiz) e arquivos soltos permitidos.
 ESCRITA_PASTAS = ("projetos/", "diario/", "people/", "pessoal/familia/", "pessoal/casa/", "empresas/")
-ESCRITA_ARQUIVOS = ("hot.md", "pendencias.md", "decisoes.md")
+ESCRITA_ARQUIVOS = ("hot.md", "pendencias.md", "decisoes.md", "entrada.md")
+FUSO = ZoneInfo("America/Sao_Paulo")
 LEITURA_PROIBIDA = (".git/", "bruto/")
 # Fora da busca: o cofre só se lê por caminho explícito (ler), nunca por busca cega.
 BUSCA_PROIBIDA = LEITURA_PROIBIDA + ("pessoal/cofre/",)
@@ -379,6 +381,56 @@ def gravar(mensagem: str) -> str:
     return saida
 
 
+ENTRADA_TOPO = "# Entrada\n\nPedaços soltos esperando a consolidação (skill `organizar`). Uma linha por pedaço.\n"
+
+
+def _agora() -> dt.datetime:
+    return dt.datetime.now(FUSO)
+
+
+def _itens_entrada() -> tuple[Path, list[str], list[int]]:
+    f = RAIZ / "entrada.md"
+    linhas = f.read_text(encoding="utf-8").split("\n") if f.exists() else []
+    return f, linhas, [i for i, l in enumerate(linhas) if l.startswith("- ")]
+
+
+def entrada_guardar(texto: str, palpite: str = "") -> str:
+    """Guarda um pedaço solto na entrada (data e hora de São Paulo + palpite de área › tema) e já grava."""
+    t, p = " ".join((texto or "").split()), " ".join((palpite or "").split())
+    if not t or len(t) > 2000:
+        raise Recusa("texto vazio ou longo demais (máx. 2000 caracteres)")
+    linha = f"- {_agora():%Y-%m-%d %H:%M} · {t}" + (f" · palpite: {p}" if p else "")
+    f, linhas, itens = _itens_entrada()
+    base = "\n".join(linhas).rstrip("\n") if linhas else ENTRADA_TOPO.rstrip("\n")
+    f.write_text(base + ("\n" if itens else "\n\n") + linha + "\n", encoding="utf-8")
+    return gravar(f"entrada: {t[:60]}")
+
+
+def entrada_ler() -> str:
+    """Pedaços pendentes da entrada, numerados (o número serve para entrada_processar)."""
+    _, linhas, itens = _itens_entrada()
+    return "\n".join(f"{n}. {linhas[i][2:]}" for n, i in enumerate(itens, 1)) or "entrada vazia"
+
+
+def entrada_processar(numeros: list[int]) -> str:
+    """Tira da entrada os pedaços já organizados e registra no diário do dia (## Entrada processada HH:MM). Não grava."""
+    f, linhas, itens = _itens_entrada()
+    nums = sorted({int(n) for n in (numeros or [])})
+    if not nums or any(n < 1 or n > len(itens) for n in nums):
+        raise Recusa(f"números fora da entrada (1 a {len(itens)})")
+    tirar = [itens[n - 1] for n in nums]
+    feitos = [linhas[i] for i in tirar]
+    resto = [l for i, l in enumerate(linhas) if i not in set(tirar)]
+    f.write_text("\n".join(resto).rstrip("\n") + "\n", encoding="utf-8")
+    agora = _agora()
+    d = RAIZ / "diario" / f"{agora:%Y}" / f"{agora:%m-%d}.md"
+    d.parent.mkdir(parents=True, exist_ok=True)
+    atual = d.read_text(encoding="utf-8") if d.exists() else f"# {agora:%Y-%m-%d}\n"
+    d.write_text(atual.rstrip("\n") + f"\n\n## Entrada processada {agora:%H:%M}\n" + "\n".join(feitos) + "\n",
+                 encoding="utf-8")
+    return f"processadas {len(feitos)} (falta gravar)"
+
+
 # ---------- servidor MCP ----------
 
 def servidor():
@@ -398,7 +450,7 @@ def servidor():
         return w
 
     for f in (inicio, ler, buscar, listar_temas, criar_tema, mover_tema, anotar, acrescentar, substituir, reescrever_hot,
-              gravar):
+              gravar, entrada_guardar, entrada_ler, entrada_processar):
         srv.tool()(embrulhar(f))
     return srv
 

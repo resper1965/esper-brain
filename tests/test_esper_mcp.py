@@ -202,3 +202,25 @@ def test_gravar_tema_movido(cerebro):
     assert m.gravar("move x").startswith("gravado:")
     st = subprocess.run(["git", "-C", str(cerebro), "status", "--porcelain"], capture_output=True, text=True).stdout
     assert st.strip() == ""
+
+
+def test_entrada(cerebro, monkeypatch):
+    import datetime as dt
+    monkeypatch.setattr(m, "_agora", lambda: dt.datetime(2026, 11, 23, 9, 5, tzinfo=m.FUSO))
+    r = m.entrada_guardar("  tô pensando em trocar a Ranger  ", "Casa › Trocar de carro")
+    assert r.startswith("gravado:")
+    m.entrada_guardar("e o prazo é sexta")
+    t = (cerebro / "entrada.md").read_text()
+    assert "- 2026-11-23 09:05 · tô pensando em trocar a Ranger · palpite: Casa › Trocar de carro" in t
+    assert "- 2026-11-23 09:05 · e o prazo é sexta\n" in t
+    assert m.entrada_ler().splitlines()[0].startswith("1. 2026-11-23 09:05 · tô pensando")
+    assert "processadas 1" in m.entrada_processar([2])
+    assert "prazo é sexta" not in (cerebro / "entrada.md").read_text()
+    d = (cerebro / "diario/2026/11-23.md").read_text()
+    assert d.startswith("# 2026-11-23") and "## Entrada processada 09:05" in d and "e o prazo é sexta" in d
+    with pytest.raises(m.Recusa):
+        m.entrada_processar([5])
+    with pytest.raises(m.Recusa):
+        m.entrada_guardar("   ")
+    m.entrada_processar([1])
+    assert m.entrada_ler() == "entrada vazia"
