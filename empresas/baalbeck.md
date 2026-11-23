@@ -8,7 +8,7 @@ cerebro: ""                  # repositório do cérebro da própria empresa, se 
 ---
 # Baalbeck Participações
 
-Só dados básicos. A gestão da empresa vive no cérebro dela, não aqui.
+Só dados básicos. Os bens e assuntos da holding ficam em `projetos/patrimonio/baalbeck/`.
 
 ## Cadastro
 - CNPJ, IE, IM: ver `pessoal/cofre/empresas.md`
@@ -19,6 +19,12 @@ Só dados básicos. A gestão da empresa vive no cérebro dela, não aqui.
 ## Sócios e administração
 - (nome — participação — cargo)
 - quem assina e com quais poderes:
+
+## Bens
+- Fazenda em Piedade — tema `projetos/patrimonio/baalbeck/fazenda-piedade.md`
+
+## Origem do patrimônio
+- Veio de herança da família Esper (dito pelo Ricardo em 2026-11-23). Sócios: ver o contrato social, não deduzir.
 
 ## Documentos societários
 - contrato social consolidado: paperless:

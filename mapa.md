@@ -8,11 +8,12 @@
 | `people/` | uma ficha por pessoa; `_aprovados.md` diz quem a Gabi escuta |
 | `pessoal/familia/` | fichas da família (sem número de documento) |
 | `pessoal/casa/` | pets, bens, casa, Home Assistant |
-| `empresas/<nome>.md` | uma ficha cadastral por empresa (sócios, quem assina, contrato social no Paperless). Só dados básicos: cada empresa tem o próprio cérebro |
+| `empresas/<nome>.md` | uma ficha cadastral por empresa (sócios, quem assina, contrato social no Paperless); assuntos de trabalho ficam em `projetos/trabalho/<empresa>/` até a empresa ter cérebro próprio |
 | `pessoal/cofre/` | números de documento, CNPJ/IE/IM — **cifrado** (git-crypt); sem a chave aparece binário |
-| `projetos/` | um tema por arquivo (ou pasta, se tiver documentos); formato em `projetos/_modelo.md` |
+| `projetos/<área>/` | temas por área: `familia/`, `trabalho/` (`ness/`, `ionic/<frente>/`, `bekaa/`, `pf/`), `patrimonio/` (`baalbeck/`, `fakiha/`), `saude/`, `casa/`, `pessoal/`; formato em `projetos/_modelo.md` |
+| `entrada.md` | caixa de entrada: pedaços soltos com palpite, até a consolidação (skill `organizar`, 21:30) |
 | `diario/AAAA/MM-DD.md` | nota do dia |
-| `skills/` | instruções portáveis: `capturar`, `retomar`, `salvar-sessao`, `digestao` (diária, 06:30) |
+| `skills/` | instruções portáveis: `capturar`, `organizar`, `pensar-junto`, `retomar`, `salvar-sessao`, `digestao` (diária, 06:30) |
 | `tools/gravar.sh` | o único jeito de gravar: trava, pull --rebase, confere o cofre, commit, push |
 | `tools/esper_mcp.py` | MCP `esper_brain`: a porta da Gabi para o cérebro (ler, buscar, anotar, gravar), sem shell |
 | `deploy/hermes/` | instalação no Hermes da VPS (SOUL, ferramentas); passo a passo em `docs/etapa3a.md` |

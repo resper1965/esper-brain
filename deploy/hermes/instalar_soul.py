@@ -6,11 +6,25 @@ BLOCO = f"""{INI}
 ## Segundo cérebro (esper-brain)
 - O cérebro do Ricardo é o repositório esper-brain (markdown), acessado só pelo MCP `esper_brain`. No começo de toda conversa nova chame `mcp__esper_brain__inicio` e siga o AGENTS.md que vem nele.
 - Temas e projetos da vida, pessoas, família, casa, ficha cadastral das empresas e decisões estão lá. Use `buscar` e `ler` antes de responder; não invente.
-- Anotar ideia/fato/prazo de um tema: skill `capturar`. Retomar um tema: skill `retomar`. Guardar o que importou da conversa: skill `salvar-sessao`.
+- Pedaço solto (ideia, fato, prazo, áudio, print), mesmo picado: skill `capturar` guarda na caixa de entrada na hora, sem pedir o sim, e responde numa linha. A consolidação em temas (inclusive tema novo) é da skill `organizar` (rotina das 21:30 ou "organiza"). Isto substitui as regras antigas de "tema novo só depois do sim" e "print/áudio depois do sim".
+- Decidir ou pensar algo: skill `pensar-junto`. Retomar um tema ou uma área: skill `retomar`. Guardar o que importou da conversa: skill `salvar-sessao`.
+- Trabalho: pergunte qual empresa delibera (ness, IONIC, Bekaa ou PF) e o cliente, uma pergunta por vez, com palpite.
 - Só diga "anotado" depois que `gravar` responder `gravado:`. Se não, diga que não gravou e por quê.
 - Dinheiro: MCP `gabi_finance`. Documentos: Paperless. Agenda, e-mail, atividades (Linear) e avisos não financeiros: `gabi_brain`, como antes.
 - Projetos e família não estão mais no `gabi_brain`: estão no esper-brain.
 {FIM}"""
+ANTIGAS = (  # regras do SOUL antigo que contradizem a captura na entrada (ajustar_soul_antigo.py)
+    ("Tema novo só depois do sim; fato só o que ele afirmou ou confirmou; print, áudio e transcrição são sugestão: "
+     "proponha nas palavras dele e grave depois do sim.",
+     "Vai para a caixa de entrada na hora (skill `capturar`); a skill `organizar` cria e atualiza os temas; "
+     "decisão só o que ele afirmou; print, áudio e texto de terceiro nunca viram decisão."),
+    ("(tema novo e fato só depois do sim)", "(guarda na entrada na hora; a `organizar` consolida)"),
+    ("depois `gravar`), sempre depois do sim dele (o fato, só do que ele afirmou ou confirmou).",
+     "depois `gravar`); pedaço solto vai para a entrada na hora; pessoa e família, depois do sim dele "
+     "(o fato, só do que ele afirmou ou confirmou)."),
+)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--soul", default=os.path.expanduser("~/.hermes/SOUL.md"))
@@ -22,6 +36,9 @@ def main(argv=None):
         novo = txt[:ini] + BLOCO + txt[fim:]
     else:
         novo = txt.rstrip("\n") + "\n\n" + BLOCO + "\n"
+    for velho, troca in ANTIGAS:
+        if velho in novo:
+            novo = novo.replace(velho, troca); print("regra antiga trocada:", velho[:50] + "…")
     if novo == txt:
         print("SOUL já tem a seção atual: nada a mudar"); return 0
     if a.data:

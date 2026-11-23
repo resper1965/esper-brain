@@ -6,6 +6,13 @@ proximo_passo: ""
 prazo: ""
 pessoas: "galves@ness.com.br"
 ligacoes: ""
+area: "trabalho"
+empresa: ""
+marca: ""
+papel: ""
+frente: ""
+holding: ""
+cliente: "Alupar"
 ---
 # [alupar] - renovação de domínios
 
