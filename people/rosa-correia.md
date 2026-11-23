@@ -20,7 +20,3 @@ Contato de e-mail corporativo (rosa.correia@t4isb.com) que trocou mensagens com 
 
 ## Histórico
 Primeiro contato registrado em 30 de setembro de 2026; último em 23 de outubro de 2026. Total de 8 interações, todas respondidas por Ricardo. Assuntos giram em torno de certificação ISO 27001 e SGSI/PIMS para a empresa Twyn.
-
-## Proposto pelo backfill
-
-- Nenhum fato novo encontrado. Todos os dados do JSON já constam na ficha atual.

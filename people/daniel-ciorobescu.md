@@ -16,7 +16,3 @@ Discutiu cobertura para as novas vulnerabilidades críticas PHP RCE (CVE-2026-10
 
 ## Histórico
 Única interação por e‑mail em 22/10/2026, na qual Daniel entrou em contato com Ricardo sobre o assunto acima. Ricardo respondeu. (email 2026-10-22)
-
-## Proposto pelo backfill
-
-- Nenhum fato novo além do já registrado.

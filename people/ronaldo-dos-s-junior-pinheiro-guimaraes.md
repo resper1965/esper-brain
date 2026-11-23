@@ -20,7 +20,3 @@ Advogado ou profissional da Pinheiro Guimarães (empresa identificada pelo nome 
 
 ## Histórico
 Primeiro contato registrado em 2026-10-06; último em 2026-11-09. Total de 10 interações (todas respondidas).
-
-## Proposto pelo backfill
-
-- Nenhum fato novo para backfill.

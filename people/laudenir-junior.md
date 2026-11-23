@@ -13,7 +13,3 @@ fontes: "email 2026-11-16"
 - Template com dados SUSEP e ANPD (email 2026-11-16)
 ## Histórico
 - Primeiro contato em 2026-11-16 (email 2026-11-16).
-
-## Proposto pelo backfill
-
-- Nenhum fato novo encontrado.

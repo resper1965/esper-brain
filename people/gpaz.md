@@ -17,7 +17,3 @@ fontes: "email 2026-10-14"
 
 ## Histórico
 Primeiro contato registrado em 14/10/2026. Último contato em 14/10/2026. Total de 2 interações. (email 2026-10-14)
-
-## Proposto pelo backfill
-
-- Nenhum fato novo foi encontrado no JSON além do que já está na ficha atual.
