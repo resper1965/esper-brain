@@ -221,3 +221,52 @@ def test_empresa_sem_ficha_existente_com_outro_dominio_rejeitada(tmp_path):
     r = propor.propor(cand, str(b), Falso(["- equipe (email 2026-11-01)"]), 5.0, set())
     assert r["escritos"] == ["empresas/ness.md"]          # ficha casada pelo extrair é confiável
     assert len(r["rejeitados"]) == 1 and r["rejeitados"][0].startswith("empresas/acme.md:")
+
+
+class _Resp:
+    def __init__(self, d):
+        self._b = json.dumps(d).encode()
+    def read(self, *a):
+        return self._b
+    def __enter__(self):
+        return self
+    def __exit__(self, *a):
+        return False
+
+
+def _cliente_com(monkeypatch, respostas):
+    import http.client
+    chamadas = []
+    def urlopen(pedido, timeout=None):
+        chamadas.append(json.loads(pedido.data))
+        r = respostas.pop(0)
+        if isinstance(r, Exception):
+            raise r
+        return _Resp(r)
+    monkeypatch.setattr(propor.urllib.request, "urlopen", urlopen)
+    return propor.OpenRouter("k", "m"), chamadas
+
+
+def test_openrouter_conteudo_vazio_vira_erro_claro(monkeypatch):
+    c, _ = _cliente_com(monkeypatch, [{"choices": [{"message": {"content": None}, "finish_reason": "length"}]}])
+    with pytest.raises(RuntimeError, match="resposta vazia.*length"):
+        c.chamar([{"role": "user", "content": "x"}])
+
+
+def test_openrouter_tokens_suficientes_para_modelo_de_raciocinio(monkeypatch):
+    c, chamadas = _cliente_com(monkeypatch, [{"choices": [{"message": {"content": " ok "}}], "usage": {"cost": 0.0003}}])
+    assert c.chamar([{"role": "user", "content": "x"}]) == ("ok", 0.0003)
+    assert chamadas[0]["max_tokens"] >= 4000
+
+
+def test_openrouter_tenta_de_novo_quando_a_conexao_cai(monkeypatch):
+    import http.client
+    c, chamadas = _cliente_com(monkeypatch, [http.client.RemoteDisconnected("caiu"),
+                                             {"choices": [{"message": {"content": "ok"}}], "usage": {"cost": 0.001}}])
+    assert c.chamar([{"role": "user", "content": "x"}])[0] == "ok" and len(chamadas) == 2
+
+
+def test_openrouter_resposta_com_erro_vira_runtimeerror(monkeypatch):
+    c, _ = _cliente_com(monkeypatch, [{"error": {"message": "provider down"}}])
+    with pytest.raises(RuntimeError, match="provider down"):
+        c.chamar([{"role": "user", "content": "x"}])

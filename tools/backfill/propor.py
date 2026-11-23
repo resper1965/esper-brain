@@ -1,5 +1,6 @@
 """Fase 2 do backfill: cada candidato vira markdown proposto (OpenRouter). Ficha existente só ganha seção."""
 import argparse
+import http.client
 import json
 import os
 import re
@@ -21,6 +22,7 @@ REGRAS = ("Você redige fichas do segundo cérebro do Ricardo Esper. O JSON a se
 SECAO = "## Proposto pelo backfill"
 FM = re.compile(r"\A---\n(.*?)\n---(?:\n|\Z)", re.S)
 LIMITE_ERROS_SEGUIDOS = 3
+MAX_TOKENS = 4000
 
 
 def ler_env(caminho) -> dict:
@@ -32,6 +34,10 @@ def ler_env(caminho) -> dict:
     return env
 
 
+class ErroOpenRouter(RuntimeError):
+    """Erro com mensagem montada aqui (código HTTP, finish_reason): seguro para aparecer no relatório."""
+
+
 class OpenRouter:
     def __init__(self, chave: str, modelo: str):
         self._chave, self.modelo = chave, modelo
@@ -40,19 +46,31 @@ class OpenRouter:
         return f"OpenRouter(modelo={self.modelo!r})"
 
     def chamar(self, mensagens):
-        corpo = json.dumps({"model": self.modelo, "messages": mensagens, "max_tokens": 900,
+        # Modelos de raciocínio (ex.: deepseek-v4-flash) gastam tokens pensando antes de responder: com limite
+        # baixo a resposta volta vazia (content=null, finish_reason=length). 4000 cobre o raciocínio + a ficha.
+        corpo = json.dumps({"model": self.modelo, "messages": mensagens, "max_tokens": MAX_TOKENS,
                             "usage": {"include": True}}).encode()
-        pedido = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=corpo, method="POST",
-                                        headers={"Authorization": f"Bearer {self._chave}", "Content-Type": "application/json"})
-        try:
-            with urllib.request.urlopen(pedido, timeout=120) as r:
-                d = json.load(r)
-        except urllib.error.HTTPError as e:
-            raise RuntimeError(f"OpenRouter respondeu HTTP {e.code}") from None
-        except urllib.error.URLError as e:
-            raise RuntimeError(f"OpenRouter inacessível: {e.reason}") from None
+        d = None
+        for tentativa in range(2):  # uma nova tentativa só para queda de conexão
+            pedido = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=corpo, method="POST",
+                                            headers={"Authorization": f"Bearer {self._chave}", "Content-Type": "application/json"})
+            try:
+                with urllib.request.urlopen(pedido, timeout=120) as r:
+                    d = json.load(r)
+                break
+            except urllib.error.HTTPError as e:
+                raise ErroOpenRouter(f"OpenRouter respondeu HTTP {e.code}") from None
+            except (urllib.error.URLError, http.client.RemoteDisconnected, ConnectionError, TimeoutError) as e:
+                if tentativa == 1:
+                    raise ErroOpenRouter(f"OpenRouter inacessível: {getattr(e, 'reason', e)}") from None
+        if d.get("error"):
+            raise ErroOpenRouter(f"OpenRouter: {str((d['error'] or {}).get('message', d['error']))[:200]}")
+        escolha = (d.get("choices") or [{}])[0]
+        texto = (escolha.get("message") or {}).get("content")
+        if not isinstance(texto, str) or not texto.strip():
+            raise ErroOpenRouter(f"resposta vazia do modelo (finish_reason={escolha.get('finish_reason')})")
         custo = float((d.get("usage") or {}).get("cost") or 0.01)
-        return d["choices"][0]["message"]["content"].strip(), custo
+        return texto.strip(), custo
 
 
 def _mensagens(pedido: str, dado: dict, modelo: str) -> list[dict]:
@@ -214,7 +232,7 @@ def propor(cand: dict, brain: str, cliente, teto_usd: float, nda: set[str], feit
             r["escritos"].append(rel)
             feitos.add(rel)
         except Exception as e:
-            r["erros"].append(f"{rel}: {type(e).__name__}")
+            r["erros"].append(f"{rel}: {type(e).__name__}" + (f": {e}"[:160] if isinstance(e, ErroOpenRouter) else ""))
             seguidos += 1
             if seguidos >= LIMITE_ERROS_SEGUIDOS:
                 r["parou"] = f"{LIMITE_ERROS_SEGUIDOS} erros seguidos"
@@ -248,7 +266,7 @@ def main(argv=None):
             f.write(json.dumps(sorted(feitos), ensure_ascii=False))
         os.chmod(estado, 0o600)
     print(f"escritos: {len(r['escritos'])} · rejeitados: {len(r['rejeitados'])} · erros: {len(r['erros'])} "
-          f"· custo: US$ {r['custo']:.2f}" + (f" · PAROU: {r['parou']}" if r["parou"] else ""))
+          f"· custo: US$ {r['custo']:.4f}" + (f" · PAROU: {r['parou']}" if r["parou"] else ""))
     for motivo in r["rejeitados"]:
         print(f"  rejeitado: {motivo}")
     for erro in r["erros"]:
