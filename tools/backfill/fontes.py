@@ -15,7 +15,8 @@ def contas_proprias(con) -> set[str]:
 
 def emails(con, desde: str) -> list[dict]:
     sql = ("select f.conta, lower(coalesce(m.remetente,'')) remetente, coalesce(m.assunto,'') assunto, m.recebida_em, "
-           "m.classe, m.lista from email_msg m join email_fonte f on f.id=m.fonte_id where m.recebida_em >= ?")
+           "m.classe, m.lista from email_msg m join email_fonte f on f.id=m.fonte_id "
+           "where m.recebida_em >= ? and f.estado='sim' and m.estado<>'na_lixeira'")
     return [dict(r) for r in con.execute(sql, (desde,))]
 
 
@@ -31,7 +32,7 @@ def contatos(con) -> dict[str, str]:
 
 def agenda(con, desde: str) -> list[dict]:
     sql = ("select dia_local dia, coalesce(titulo,'') titulo, coalesce(organizador_nome,'') organizador, participantes_qtd participantes "
-           "from agenda_evento where dia_local >= ? and coalesce(status,'') <> 'cancelled'")
+           "from agenda_evento where dia_local >= ? and coalesce(status,'') <> 'cancelled' and not coalesce(privado,0)")
     return [dict(r) for r in con.execute(sql, (desde,))]
 
 
