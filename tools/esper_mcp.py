@@ -27,6 +27,11 @@ BUSCA_PROIBIDA = LEITURA_PROIBIDA + ("pessoal/cofre/",)
 MAX_LER = 60_000
 MAX_ESCREVER = 60_000
 MAX_ACHADOS = 40
+AREAS = ("familia", "trabalho", "patrimonio", "saude", "casa", "pessoal")
+EMPRESAS = {"ness": "CEO", "ionic": "CISO e acionista", "bekaa": "titular", "pf": "freelancer"}
+MARCAS = {"ness": ("trustness", "forense.io")}
+FRENTES_IONIC = ("governanca", "produto", "operacao", "pessoas", "acionista")
+HOLDINGS = ("baalbeck", "fakiha")
 
 
 class Recusa(Exception):
@@ -99,6 +104,52 @@ def _frontmatter(txt: str) -> dict[str, str]:
     return out
 
 
+def _pasta_do_tema(area: str, empresa: str = "", marca: str = "", frente: str = "", holding: str = "",
+                   cliente: str = "") -> str:
+    """Pasta do tema pela área: trabalho/<empresa>[/<frente>] e patrimonio/<holding>. Recusa combinação inválida."""
+    area, empresa, marca, frente, holding = (str(x or "").strip().lower() for x in (area, empresa, marca, frente, holding))
+    if area not in AREAS:
+        raise Recusa(f"área inválida: {area!r}; use uma de: {', '.join(AREAS)}")
+    partes = ["projetos", area]
+    if area == "trabalho":
+        if empresa:
+            if empresa not in EMPRESAS:
+                raise Recusa(f"empresa inválida: {empresa!r}; use uma de: {', '.join(EMPRESAS)}")
+            partes.append(empresa)
+            if marca and marca not in MARCAS.get(empresa, ()):
+                raise Recusa(f"marca {marca!r} não é da {empresa}")
+            if empresa == "ionic":
+                if frente not in FRENTES_IONIC:
+                    raise Recusa(f"na IONIC informe a frente: {', '.join(FRENTES_IONIC)}")
+                partes.append(frente)
+            elif frente:
+                raise Recusa("frente só existe na IONIC")
+        elif marca or frente:
+            raise Recusa("marca e frente exigem a empresa")
+    elif empresa or marca or frente or str(cliente or "").strip():
+        raise Recusa("empresa, marca, frente e cliente são só da área trabalho")
+    if area == "patrimonio" and holding:
+        if holding not in HOLDINGS:
+            raise Recusa(f"holding inválida: {holding!r}; use uma de: {', '.join(HOLDINGS)}")
+        partes.append(holding)
+    elif holding:
+        raise Recusa("holding só na área patrimonio")
+    return "/".join(partes)
+
+
+def _campo(txt: str, chave: str, valor: str) -> str:
+    """Troca (ou insere antes do fim do frontmatter) a linha `chave: "valor"`."""
+    v = str(valor or "").replace('"', "'")
+    linha = f'{chave}: "{v}"'
+    novo, n = re.subn(rf"^{re.escape(chave)}:[^\n]*$", lambda _: linha, txt, count=1, flags=re.M)
+    if n:
+        return novo
+    m_ = re.match(r"^---\n.*?\n(?=---\n)", txt, re.S)
+    if not m_:
+        raise Recusa("arquivo sem frontmatter")
+    return txt[: m_.end()] + linha + "\n" + txt[m_.end():]
+
+
 # ---------- ferramentas (funções puras, testáveis sem MCP) ----------
 
 def inicio() -> str:
@@ -158,31 +209,60 @@ def buscar(termo: str, pasta: str = "") -> str:
     return "\n".join(achados) or "nada encontrado"
 
 
-def listar_temas() -> str:
-    """Temas/projetos: caminho | tema | apelidos | estado | próximo passo | prazo | última mudança no arquivo."""
-    linhas = []
-    for f in sorted(list((RAIZ / "projetos").glob("*.md")) + list((RAIZ / "projetos").glob("*/README.md"))):
+def _arquivos_de_tema():
+    base = RAIZ / "projetos"
+    for f in sorted(base.rglob("*.md")):
         if f.name.startswith("_"):
             continue
+        if f.name != "README.md" and (f.parent / "README.md").exists():
+            continue  # anexo dentro de um tema em pasta
+        yield f
+
+
+def listar_temas(area: str = "", empresa: str = "") -> str:
+    """Temas: caminho | tema | área | empresa · cliente | estado | próximo passo | prazo | última mudança.
+    Filtra por área (familia, trabalho, patrimonio, saude, casa, pessoal) e por empresa (ness, ionic, bekaa, pf)."""
+    area, empresa = (area or "").strip().lower(), (empresa or "").strip().lower()
+    linhas = []
+    for f in _arquivos_de_tema():
+        rel = f.relative_to(RAIZ).as_posix()
         fm = _frontmatter(f.read_text(encoding="utf-8"))
+        partes = rel.split("/")
+        a = fm.get("area") or (partes[1] if len(partes) > 2 and partes[1] in AREAS else "")
+        e = fm.get("empresa", "")
+        if (area and a != area) or (empresa and e != empresa):
+            continue
+        quem = " · ".join(x for x in (e, fm.get("cliente", "")) if x)
         mud = dt.date.fromtimestamp(f.stat().st_mtime).isoformat()
-        linhas.append(" | ".join([f.relative_to(RAIZ).as_posix(), fm.get("tema", "?"), fm.get("apelidos", "[]"),
-                                  fm.get("estado", "?"), fm.get("proximo_passo", ""), fm.get("prazo", ""), mud]))
-    return "\n".join(linhas) or "nenhum tema ainda"
+        linhas.append(" | ".join([rel, fm.get("tema", "?"), a, quem, fm.get("estado", "?"),
+                                  fm.get("proximo_passo", ""), fm.get("prazo", ""), mud]))
+    if linhas:
+        return "\n".join(linhas)
+    return "nenhum tema nessa área" if (area or empresa) else "nenhum tema ainda"
 
 
-def criar_tema(slug: str, tema: str, apelidos: list[str] | None = None) -> str:
+def criar_tema(slug: str, tema: str, apelidos: list[str] | None = None, area: str = "", empresa: str = "",
+               marca: str = "", cliente: str = "", frente: str = "", holding: str = "") -> str:
+    """Cria o tema na pasta da área. Trabalho: empresa (ness|ionic|bekaa|pf), marca, cliente; IONIC: frente;
+    Patrimônio: holding (baalbeck|fakiha). Não grava."""
     if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", slug or ""):
         raise Recusa("slug: minúsculas, números e hífens, sem acento (ex.: trocar-de-carro)")
-    p = RAIZ / "projetos" / f"{slug}.md"
-    if p.exists() or (RAIZ / "projetos" / slug).exists():
-        raise Recusa(f"já existe: projetos/{slug}")
+    pasta = _pasta_do_tema(area, empresa, marca, frente, holding, cliente)
+    for f in _arquivos_de_tema():
+        if f.stem == slug or (f.name == "README.md" and f.parent.name == slug):
+            raise Recusa(f"já existe: {f.relative_to(RAIZ).as_posix()}")
+    p = RAIZ / pasta / f"{slug}.md"
     modelo = (RAIZ / "projetos" / "_modelo.md").read_text(encoding="utf-8")
     ap = ", ".join(a.strip() for a in (apelidos or []) if a.strip())
     txt = modelo.replace('tema: "Nome do tema"', f'tema: "{tema}"').replace("# Nome do tema", f"# {tema}")
     txt = re.sub(r"^apelidos: \[\][^\n]*", f"apelidos: [{ap}]", txt, flags=re.M)
+    empresa_n = (empresa or "").strip().lower()
+    for k, v in (("area", area), ("empresa", empresa_n), ("marca", marca), ("cliente", cliente),
+                 ("papel", EMPRESAS.get(empresa_n, "")), ("frente", frente), ("holding", holding)):
+        txt = _campo(txt, k, str(v or "").strip().lower() if k in ("area", "marca", "frente", "holding") else v)
+    p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(txt, encoding="utf-8")
-    return f"criado: projetos/{slug}.md (falta gravar)"
+    return f"criado: {pasta}/{slug}.md (falta gravar)"
 
 
 def anotar(caminho: str, secao: str, texto: str) -> str:

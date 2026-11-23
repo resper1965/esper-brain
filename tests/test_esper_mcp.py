@@ -22,11 +22,11 @@ def cerebro(tmp_path, monkeypatch):
 
 def test_fluxo_capturar(cerebro):
     assert "nenhum tema" in m.listar_temas()
-    m.criar_tema("trocar-de-carro", "Trocar de carro", ["carro", "suv"])
-    assert "Trocar de carro" in m.listar_temas() and "carro, suv" in m.listar_temas()
-    m.anotar("projetos/trocar-de-carro.md", "Ideias soltas", "2026-11-17: ver híbrido")
-    m.anotar("projetos/trocar-de-carro.md", "ideias soltas", "2026-11-18: mais nova")
-    t = (cerebro / "projetos/trocar-de-carro.md").read_text()
+    m.criar_tema("trocar-de-carro", "Trocar de carro", ["carro", "suv"], area="casa")
+    assert "Trocar de carro" in m.listar_temas() and "casa" in m.listar_temas()
+    m.anotar("projetos/casa/trocar-de-carro.md", "Ideias soltas", "2026-11-17: ver híbrido")
+    m.anotar("projetos/casa/trocar-de-carro.md", "ideias soltas", "2026-11-18: mais nova")
+    t = (cerebro / "projetos/casa/trocar-de-carro.md").read_text()
     assert t.index("mais nova") < t.index("ver híbrido") and t.index("## Ideias soltas") < t.index("mais nova")
     assert m.gravar("capturar(trocar-de-carro): híbrido").startswith("gravado:")
     assert m.gravar("de novo") == "nada a gravar"
@@ -45,7 +45,7 @@ def test_recusas(cerebro):
     with pytest.raises(m.Recusa):
         m.ler("pessoal/cofre/doc.md")  # cifrado: avisa que falta destravar
     with pytest.raises(m.Recusa):
-        m.criar_tema("Tem Acento", "x")
+        m.criar_tema("Tem Acento", "x", area="casa")
     (cerebro / "fora").mkdir(); (cerebro / "projetos/link.md").symlink_to("/etc/hostname")
     with pytest.raises(m.Recusa):
         m.ler("projetos/link.md")
@@ -53,14 +53,14 @@ def test_recusas(cerebro):
 def test_diario_e_substituir(cerebro):
     m.acrescentar("diario/2026/11-17.md", "# 2026-11-17\n\n## 19:30 · telegram\n- decidi X")
     m.acrescentar("pendencias.md", "- 2026-11-20 [teste]: fazer Y")
-    m.criar_tema("t", "T")
-    m.substituir("projetos/t.md", 'proximo_passo: ""', 'proximo_passo: "ligar"')
+    m.criar_tema("t", "T", area="pessoal")
+    m.substituir("projetos/pessoal/t.md", 'proximo_passo: ""', 'proximo_passo: "ligar"')
     with pytest.raises(m.Recusa):
-        m.substituir("projetos/t.md", "não existe", "x")
+        m.substituir("projetos/pessoal/t.md", "não existe", "x")
     out = m.gravar("sessão")
     assert out.startswith("gravado:")
     log = subprocess.run(["git", "-C", str(cerebro), "show", "--stat", "HEAD"], capture_output=True, text=True).stdout
-    assert "diario/2026/11-17.md" in log and "pendencias.md" in log and "projetos/t.md" in log
+    assert "diario/2026/11-17.md" in log and "pendencias.md" in log and "projetos/pessoal/t.md" in log
     assert "proximo_passo: \"ligar\"" in m.listar_temas() or "ligar" in m.listar_temas()
 
 def test_inicio(cerebro):
@@ -102,7 +102,7 @@ def test_buscar_pasta_fica_dentro_do_cerebro(cerebro):
 
 
 def test_gravar_caminho_com_espaco(cerebro):
-    m.criar_tema("x", "X")
+    m.criar_tema("x", "X", area="casa")
     (cerebro / "projetos/com espaco.md").write_text("# a\n", encoding="utf-8")
     assert m.gravar("teste espaço").startswith("gravado:")
     st = subprocess.run(["git", "-C", str(cerebro), "status", "--porcelain"], capture_output=True, text=True).stdout
@@ -127,3 +127,54 @@ def test_buscar_acha_singular_e_plural_e_varias_palavras(cerebro):
     assert "baalbeck.md" in m.buscar("holdings patrimoniais")
     assert "nada encontrado" == m.buscar("holdings vinicolas")      # todas as palavras precisam estar na linha
     assert "baalbeck.md" in m.buscar("Holding Patrimonial")          # frase exata continua achando
+
+
+@pytest.mark.parametrize("kw,pasta", [
+    (dict(area="familia"), "projetos/familia"),
+    (dict(area="trabalho"), "projetos/trabalho"),
+    (dict(area="trabalho", empresa="ness", marca="forense.io", cliente="Zacarelli"), "projetos/trabalho/ness"),
+    (dict(area="trabalho", empresa="ionic", frente="produto"), "projetos/trabalho/ionic/produto"),
+    (dict(area="trabalho", empresa="bekaa"), "projetos/trabalho/bekaa"),
+    (dict(area="trabalho", empresa="pf"), "projetos/trabalho/pf"),
+    (dict(area="patrimonio", holding="fakiha"), "projetos/patrimonio/fakiha"),
+    (dict(area="patrimonio"), "projetos/patrimonio"),
+])
+def test_pasta_do_tema(kw, pasta):
+    assert m._pasta_do_tema(**kw) == pasta
+
+
+@pytest.mark.parametrize("kw", [
+    dict(area=""), dict(area="trabalhos"), dict(area="trabalho", empresa="secops"),
+    dict(area="trabalho", empresa="ionic"),                       # IONIC exige frente
+    dict(area="trabalho", empresa="ness", frente="produto"),       # frente só na IONIC
+    dict(area="trabalho", empresa="bekaa", marca="trustness"),     # marca só da ness
+    dict(area="trabalho", marca="trustness"),                      # marca exige empresa
+    dict(area="casa", empresa="ness"), dict(area="casa", cliente="X"),
+    dict(area="patrimonio", holding="outra"), dict(area="casa", holding="fakiha"),
+])
+def test_pasta_do_tema_recusa(kw):
+    with pytest.raises(m.Recusa):
+        m._pasta_do_tema(**kw)
+
+
+def test_criar_tema_preenche_campos_e_papel(cerebro):
+    r = m.criar_tema("proposta-pentest", "Proposta pentest", ["pentest"], area="trabalho", empresa="ness",
+                     cliente="Pinheiro Guimarães")
+    assert "projetos/trabalho/ness/proposta-pentest.md" in r
+    fm = m._frontmatter((cerebro / "projetos/trabalho/ness/proposta-pentest.md").read_text())
+    assert (fm["area"], fm["empresa"], fm["cliente"], fm["papel"]) == ("trabalho", "ness", "Pinheiro Guimarães", "CEO")
+    with pytest.raises(m.Recusa):   # slug único no cérebro todo
+        m.criar_tema("proposta-pentest", "Outra", area="pessoal")
+
+
+def test_listar_temas_filtra_por_area_e_empresa(cerebro):
+    m.criar_tema("a", "Tema A", area="trabalho", empresa="ionic", frente="governanca")
+    m.criar_tema("b", "Tema B", area="trabalho", empresa="ness", cliente="Alupar")
+    m.criar_tema("c", "Tema C", area="patrimonio", holding="baalbeck")
+    tudo = m.listar_temas()
+    assert all(x in tudo for x in ("Tema A", "Tema B", "Tema C"))
+    assert "ness · Alupar" in tudo
+    so_trab = m.listar_temas(area="trabalho")
+    assert "Tema A" in so_trab and "Tema C" not in so_trab
+    assert "Tema B" not in m.listar_temas(empresa="ionic")
+    assert m.listar_temas(area="saude") == "nenhum tema nessa área"
