@@ -5,6 +5,8 @@ origem: gabi-brain pessoa:giovanna
 
 - apelido: Gigi
 - parentesco: filha
+- mãe: Carla Noce Della Torre (`pessoal/familia/carla-noce-della-torre.md`)
+- pai: Ricardo Esper
 - nascimento: 2009-10-29
 
 ## Documentos
