@@ -142,7 +142,7 @@ def test_tabela_repetida_e_resposta(tmp_path):
     ps = _perguntas(tmp_path)
     m = tmp_path / "m.csv"
     harness.gravar_csv(harness.markdown(brain, ps), m)
-    with pytest.raises(SystemExit) as e:
+    with pytest.raises(ValueError) as e:
         tabela.montar([m, m])
     assert "repetida" in str(e.value)
     g = _fake_gbrain(tmp_path, json.dumps({"answer": "R" * 300, "citations": [{"file": "a.md"}]}))

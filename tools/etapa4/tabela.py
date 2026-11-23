@@ -11,7 +11,7 @@ def montar(csvs):
             rows = list(csv.DictReader(f))
         nome = rows[0]["camada"] if rows else Path(c).stem
         if nome in camadas:
-            sys.exit(f"erro: camada repetida: {nome}")
+            raise ValueError(f"camada repetida: {nome}")
         camadas.append(nome)
         for r in rows:
             perguntas.setdefault(int(r["n"]), {"q": r["pergunta"]})[nome] = r
@@ -37,4 +37,8 @@ def montar(csvs):
 
 
 if __name__ == "__main__":
-    print(montar(sys.argv[1:]), end="")
+    try:
+        print(montar(sys.argv[1:]), end="")
+    except ValueError as e:
+        print(f"erro: {e}", file=sys.stderr)
+        sys.exit(2)
