@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import re
 import subprocess
 import time
 import unicodedata
@@ -28,12 +29,33 @@ def carregar_perguntas(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def bateu(esperadas, achadas):
-    for e in como_lista(esperadas):
-        for a in achadas:
-            if (e.endswith("/") and a.startswith(e)) or a == e:
-                return True
-    return False
+STOPWORDS = set("""que quem qual quais de do da dos das o a os as e ele ela dele dela tem ainda para
+alem em é eh um uma na no nas nos por com se ou foi era são sao""".split()) | {"é"}
+
+
+def palavras_da_pergunta(pergunta):
+    return [t for t in re.findall(r"\w+", norm(pergunta)) if t not in STOPWORDS and len(t) > 1]
+
+
+def norm_pagina(s, brain=""):
+    s = s.strip()
+    if brain:
+        pre = str(brain).rstrip("/") + "/"
+        if s.startswith(pre):
+            s = s[len(pre):]
+    if s.startswith("./"):
+        s = s[2:]
+    if s.startswith("brain/"):
+        s = s[len("brain/"):]
+    if s.endswith(".md"):
+        s = s[:-3]
+    return s
+
+
+def bateu(esperadas, achadas, modo="alguma"):
+    ach = {norm_pagina(a) for a in achadas}
+    ok = [norm_pagina(e) in ach for e in como_lista(esperadas)]
+    return all(ok) if modo == "todas" else any(ok)
 
 
 def _ignorado(rel):
@@ -44,7 +66,7 @@ def _linha(p, camada, achadas, ms, erro="", resposta=None):
     r = {"n": p["n"], "camada": camada, "pergunta": p["pergunta"],
          "fonte_esperada": como_lista(p["fonte_esperada"]),
          "paginas_achadas": achadas,
-         "fonte_bateu": bool(not erro and bateu(p["fonte_esperada"], achadas)),
+         "fonte_bateu": bool(not erro and bateu(p["fonte_esperada"], achadas, p.get("modo", "alguma"))),
          "latencia_ms": round(ms, 1), "erro": erro}
     if resposta is not None:
         r["resposta"] = resposta
@@ -56,14 +78,15 @@ def markdown(brain, perguntas):
     saida = []
     for p in perguntas:
         t0 = time.perf_counter()
-        termos = [norm(k) for k in p["palavras_chave"]]
+        termos = [norm(k) for k in p.get("palavras_chave") or palavras_da_pergunta(p["pergunta"])]
+        pads = [re.compile(r"\b" + re.escape(t) + r"\b") for t in termos]
         pontos = []
         for f in sorted(brain.rglob("*.md")):
             rel = f.relative_to(brain).as_posix()
             if _ignorado(rel):
                 continue
             txt = norm(f.read_text(encoding="utf-8", errors="ignore"))
-            n = sum(1 for t in termos if t in txt)
+            n = sum(1 for r in pads if r.search(txt))
             if n:
                 pontos.append((-n, rel))
         pontos.sort()
@@ -75,20 +98,14 @@ def markdown(brain, perguntas):
 def extrair_paginas(obj, brain=""):
     """Percorre o JSON e coleta valores de chaves de caminho, relativos ao brain."""
     achados = []
-    prefixo = str(brain).rstrip("/") + "/" if brain else None
 
     def limpa(s):
-        if prefixo and s.startswith(prefixo):
-            s = s[len(prefixo):]
-        s = s[2:] if s.startswith("./") else s
-        if s.startswith("brain/"):
-            s = s[len("brain/"):]
-        return s
+        return norm_pagina(s, brain)
 
     def anda(o):
         if isinstance(o, dict):
             for k, v in o.items():
-                if k in CHAVES and isinstance(v, str) and (v.endswith(".md") or "/" in v):
+                if k in CHAVES and isinstance(v, str) and v.strip():
                     s = limpa(v)
                     if s not in achados:
                         achados.append(s)
@@ -99,7 +116,7 @@ def extrair_paginas(obj, brain=""):
                 anda(v)
 
     anda(obj)
-    return achados
+    return achados[:3]
 
 
 def gbrain(brain, perguntas, camada, binario="gbrain"):
@@ -116,7 +133,7 @@ def gbrain(brain, perguntas, camada, binario="gbrain"):
             else:
                 try:
                     dados = json.loads(r.stdout)
-                    achadas = extrair_paginas(dados, brain)
+                    achadas = extrair_paginas(dados, brain)  # ja no maximo 3
                     if camada == "gbrain-think":
                         resposta = (dados.get("answer") or dados.get("resposta") or dados.get("text")
                                     or "") if isinstance(dados, dict) else str(dados)
