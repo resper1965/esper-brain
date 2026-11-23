@@ -20,10 +20,12 @@ def emails(con, desde: str) -> list[dict]:
     return [dict(r) for r in con.execute(sql, (desde,))]
 
 
-def respondidos(con) -> dict[str, str]:
-    sql = ("select lower(r.endereco) e, max(r.em) em from email_respondido r join email_fonte f on f.id=r.fonte_id "
-           "where f.estado='sim' group by lower(r.endereco)")
-    return {r["e"]: r["em"][:10] for r in con.execute(sql)}
+def respondidos(con) -> set[str]:
+    """Endereços que o gabi-brain registrou em email_respondido (todo To/Cc de 365 dias de enviados, não um log de
+    respostas; `em` é a hora da sincronização). Só sinal booleano: sem datas. Exclui a linha sentinela endereco=''."""
+    sql = ("select distinct lower(r.endereco) e from email_respondido r join email_fonte f on f.id=r.fonte_id "
+           "where f.estado='sim' and r.endereco<>''")
+    return {r["e"] for r in con.execute(sql)}
 
 
 def contatos(con) -> dict[str, str]:
@@ -33,7 +35,8 @@ def contatos(con) -> dict[str, str]:
 
 def agenda(con, desde: str) -> list[dict]:
     sql = ("select dia_local dia, coalesce(titulo,'') titulo, coalesce(organizador_nome,'') organizador, participantes_qtd participantes "
-           "from agenda_evento where dia_local >= ? and coalesce(status,'') <> 'cancelled' and not coalesce(privado,0)")
+           "from agenda_evento e join agenda_fonte f on f.id=e.fonte_id "
+           "where f.estado='sim' and dia_local >= ? and coalesce(status,'') <> 'cancelled' and not coalesce(privado,0)")
     return [dict(r) for r in con.execute(sql, (desde,))]
 
 

@@ -31,7 +31,7 @@ def _acumulador() -> dict:
     return {"datas": [], "contas": set(), "assuntos": defaultdict(int)}
 
 
-def pessoas(emails, respondidos, contatos, proprios, minimo=3) -> list[dict]:
+def pessoas(emails, respondidos: set[str], contatos, proprios, minimo=3) -> list[dict]:
     acc = defaultdict(_acumulador)
     for e in emails:
         end = e["remetente"]
@@ -41,15 +41,12 @@ def pessoas(emails, respondidos, contatos, proprios, minimo=3) -> list[dict]:
         a["datas"].append(e["recebida_em"][:10])
         a["contas"].add(e["conta"])
         a["assuntos"][normalizar_assunto(e["assunto"])] += 1
-    for end in respondidos:
-        if end not in proprios and not e_automatico(end):
-            acc.setdefault(end, _acumulador())
     saida = []
     for end, a in acc.items():
-        respondido = end in respondidos
-        if len(a["datas"]) < minimo and not respondido:
+        respondido = end in respondidos          # só sinal: email_respondido não tem data de resposta confiável
+        if len(a["datas"]) < minimo and not (respondido and a["datas"]):
             continue
-        datas = sorted(a["datas"] + ([respondidos[end]] if respondido else []))
+        datas = sorted(a["datas"])
         top = sorted(a["assuntos"].items(), key=lambda kv: -kv[1])[:5]
         saida.append({"endereco": end, "nome": contatos.get(end, ""), "interacoes": len(a["datas"]),
                       "primeira": datas[0], "ultima": datas[-1], "contas": sorted(a["contas"]),
@@ -120,8 +117,7 @@ def extrair(banco: str, brain: str, dias: int, hoje: date, paperless_cfg=None) -
     con = fontes.abrir(banco)
     proprios = fontes.contas_proprias(con)
     em = fontes.emails(con, desde)
-    respondidos = {e: d for e, d in fontes.respondidos(con).items() if d >= desde}
-    ps = pessoas(em, respondidos, fontes.contatos(con), proprios)
+    ps = pessoas(em, fontes.respondidos(con), fontes.contatos(con), proprios)
     b = Path(brain)
     c = {"gerado_em": hoje.isoformat(), "janela_desde": desde, "pessoas": ps,
          "pessoas_agenda": pessoas_agenda(fontes.agenda(con, desde)),

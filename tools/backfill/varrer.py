@@ -14,6 +14,7 @@ PADROES = {
         re.I,
     ),
     "cnh": re.compile(r"\bCNH\b[^\d\n]{0,10}?\d{9,11}(?!\d)", re.I),
+    "valor": re.compile(r"(?:R\$|US\$|€|\$)\s*\d|(?<![\d.,])\d+(?:\.\d{3})*,\d{2}\b"),
     "renavam": re.compile(r"\bRENAVAM\b[^\d\n]{0,10}?\d{9,11}(?!\d)", re.I),
 }
 

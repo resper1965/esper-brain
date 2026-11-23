@@ -20,7 +20,10 @@ def test_extrair_ponta_a_ponta(banco, tmp_path):
     assert enderecos == ["ana@acme.com.br", "bob@acme.com.br"]          # ana: 3 e-mails; bob: respondido
     ana = c["pessoas"][0]
     assert ana["nome"] == "Ana Souza" and ana["interacoes"] == 3 and ana["ultima"] == "2026-11-10"
-    assert c["pessoas"][1]["respondido"] is True
+    bob = c["pessoas"][1]
+    assert bob["respondido"] is True and bob["interacoes"] == 1
+    assert bob["primeira"] == bob["ultima"] == "2026-11-01"      # data do sync de email_respondido nunca entra
+    assert "" not in enderecos and "so-respondido@acme.com.br" not in enderecos and "naoconsentido@acme.com.br" not in enderecos
     assert all(e not in enderecos for e in ["noreply@banco.com.br", "news@loja.com", "spam@x.com", "ricardo@ness.com.br"])
     assert c["pessoas_agenda"][0]["nome"] == "Ana Souza" and c["pessoas_agenda"][0]["reunioes"] == 2
     assert c["empresas"][0]["dominio"] == "acme.com.br" and c["empresas"][0]["ficha"] is None
@@ -52,3 +55,9 @@ def test_main_exige_argumentos_sem_resumo():
     import pytest
     with pytest.raises(SystemExit):
         extrair.main(["--saida", "/tmp/x.json"])
+
+def test_respondido_sem_email_nao_qualifica_e_nunca_zero_interacoes():
+    emails = [{"remetente": "x@y.com", "assunto": "a", "recebida_em": "2026-11-01T10:00:00Z", "conta": "c", "classe": "normal", "lista": 0}]
+    ps = extrair.pessoas(emails, {"x@y.com", "z@y.com", ""}, {}, set())
+    assert [p["endereco"] for p in ps] == ["x@y.com"] and all(p["interacoes"] >= 1 for p in ps)
+    assert ps[0]["ultima"] == "2026-11-01"

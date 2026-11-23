@@ -77,6 +77,30 @@ def _chaves_fm(texto: str) -> set | None:
             if l and not l[0].isspace() and not l.startswith("#") and ":" in l}
 
 
+def _sem_defaults(modelo: str) -> str:
+    """Zera os valores do frontmatter do modelo (defaults como `vinculo: participacao` não podem ser copiados)."""
+    m = FM.match(modelo)
+    if not m:
+        return modelo
+    novas = []
+    for l in m.group(1).splitlines():
+        if l and not l[0].isspace() and not l.startswith("#") and ":" in l:
+            l = f'{l.split(":", 1)[0]}: ""'
+        novas.append(l)
+    return modelo[:m.start(1)] + "\n".join(novas) + modelo[m.end(1):]
+
+
+def normalizar_nda(linha: str) -> str:
+    t = linha.split("#", 1)[0].strip().lower()
+    t = re.sub(r"^https?://", "", t)
+    t = t.split("/", 1)[0]
+    if t.startswith("@"):
+        t = t[1:]
+    if t.startswith("*."):
+        t = t[2:]
+    return t.strip()
+
+
 def _valido(texto: str, chaves_modelo: set) -> bool:
     chaves = _chaves_fm(texto)
     return chaves is not None and chaves_modelo <= chaves
@@ -110,7 +134,10 @@ def _tarefas(cand: dict, b: Path, nda: set[str]):
         if _sob_nda(e["dominio"], nda):
             continue
         rel = f"empresas/{e['ficha'] or slug(e['dominio'].split('.')[0])}.md"
-        yield rel, "empresa", "Escreva a ficha cadastral mínima desta empresa no formato do modelo (sem CNPJ).", e, None
+        pedido = ("Esta é uma empresa de terceiro (cliente, fornecedor ou contato), não uma das empresas do Ricardo. "
+                  "Escreva a ficha cadastral mínima no formato do modelo (sem CNPJ). Deixe papel_do_ricardo e vinculo "
+                  "vazios (\"\") a menos que o dado mostre explicitamente.")
+        yield rel, "empresa", pedido, e, None
     for t in cand.get("temas", []):
         if any(_sob_nda(x.split("@")[-1], nda) for x in t.get("pessoas", [])):
             continue
@@ -121,17 +148,40 @@ def propor(cand: dict, brain: str, cliente, teto_usd: float, nda: set[str], feit
     b = Path(brain)
     feitos = set() if feitos is None else feitos
     nda = {x.lower() for x in nda}
-    modelos = {"pessoa": (b / "people/_modelo.md").read_text(), "empresa": (b / "empresas/_modelo.md").read_text(),
-               "tema": (b / "projetos/_modelo.md").read_text()}
-    chaves = {t: (_chaves_fm(m) or set()) for t, m in modelos.items()}
+    brutos = {"pessoa": (b / "people/_modelo.md").read_text(), "empresa": (b / "empresas/_modelo.md").read_text(),
+              "tema": (b / "projetos/_modelo.md").read_text()}
+    chaves = {t: (_chaves_fm(m) or set()) for t, m in brutos.items()}
+    modelos = {t: _sem_defaults(m) for t, m in brutos.items()}
+    # assuntos de pessoas sob NDA não podem chegar à IA por outras pessoas nem por temas
+    assuntos_nda = {a.lower() for p in cand.get("pessoas", []) if _sob_nda(p["endereco"].split("@")[-1], nda)
+                    for a in p.get("assuntos", [])}
+    cand = {**cand, "pessoas": [p if _sob_nda(p["endereco"].split("@")[-1], nda) else
+                                {**p, "assuntos": [a for a in p.get("assuntos", []) if a.lower() not in assuntos_nda]}
+                                for p in cand.get("pessoas", [])],
+            "temas": [t for t in cand.get("temas", []) if t["tema"].lower() not in assuntos_nda]}
+    vistos: set[str] = set()
     r = {"escritos": [], "custo": 0.0, "parou": None, "rejeitados": [], "erros": []}
     ultimo_custo = 0.0
     seguidos = 0
     for rel, tipo, pedido, dado, pronto in _tarefas(cand, b, nda):
+        if Path(rel).name == ".md":
+            r["rejeitados"].append(f"{rel}: slug vazio")
+            continue
+        if rel in vistos:
+            r["rejeitados"].append(f"{rel}: colisão com outro candidato da mesma execução")
+            continue
+        vistos.add(rel)
         if rel in feitos:
             continue
         destino = b / rel
         existe = destino.exists()
+        if existe:
+            atual_txt = destino.read_text().lower()
+            chave = {"pessoa": dado.get("endereco"), "tema": dado.get("tema"),
+                     "empresa": None if dado.get("ficha") else dado.get("dominio")}[tipo]
+            if chave and chave.lower() not in atual_txt:
+                r["rejeitados"].append(f"{rel}: ficha existente não pertence a este candidato ({chave} ausente)")
+                continue
         if pronto is None and r["custo"] + ultimo_custo > teto_usd:
             r["parou"] = f"teto de US$ {teto_usd:.2f} atingido antes de {rel}"
             break
@@ -150,7 +200,7 @@ def propor(cand: dict, brain: str, cliente, teto_usd: float, nda: set[str], feit
             if existe:
                 linhas = [l for l in texto.splitlines() if l.startswith("- ")]
                 if not linhas or achados("\n".join(linhas)):
-                    r["rejeitados"].append(rel)
+                    r["rejeitados"].append(f"{rel}: sem item de lista ou com dado sensível")
                     continue
                 atual = destino.read_text().rstrip("\n")
                 if SECAO not in atual:
@@ -158,7 +208,7 @@ def propor(cand: dict, brain: str, cliente, teto_usd: float, nda: set[str], feit
                 destino.write_text(f"{atual}\n" + "\n".join(linhas) + "\n")
             else:
                 if not _valido(texto, chaves[tipo]) or achados(texto):
-                    r["rejeitados"].append(rel)
+                    r["rejeitados"].append(f"{rel}: frontmatter inválido ou com dado sensível")
                     continue
                 destino.write_text(texto.rstrip("\n") + "\n")
             r["escritos"].append(rel)
@@ -175,17 +225,18 @@ def propor(cand: dict, brain: str, cliente, teto_usd: float, nda: set[str], feit
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidatos", required=True); ap.add_argument("--brain", required=True)
-    ap.add_argument("--env", required=True); ap.add_argument("--nda"); ap.add_argument("--teto-usd", type=float, default=5.0)
+    ap.add_argument("--env", required=True); ap.add_argument("--nda", required=True); ap.add_argument("--teto-usd", type=float, default=5.0)
     ap.add_argument("--modelo")
     a = ap.parse_args(argv)
+    if not Path(a.nda).is_file():
+        print(f"arquivo --nda não encontrado: {a.nda}", file=sys.stderr)
+        return 2
     env = ler_env(a.env)
     modelo = a.modelo or env.get("OPENROUTER_MODEL_FAST")
     if not env.get("OPENROUTER_API_KEY") or not modelo:
         print("faltou OPENROUTER_API_KEY ou modelo (OPENROUTER_MODEL_FAST / --modelo)", file=sys.stderr)
         return 2
-    nda = set()
-    if a.nda and Path(a.nda).exists():
-        nda = {l.strip().lower() for l in Path(a.nda).read_text().splitlines() if l.strip() and not l.startswith("#")}
+    nda = {n for n in (normalizar_nda(l) for l in Path(a.nda).read_text(encoding="utf-8").splitlines()) if n}
     cand = json.loads(Path(a.candidatos).read_text(encoding="utf-8"))
     estado = Path(a.candidatos).parent / "propor-estado.json"
     feitos = set(json.loads(estado.read_text(encoding="utf-8"))) if estado.exists() else set()
@@ -198,8 +249,8 @@ def main(argv=None):
         os.chmod(estado, 0o600)
     print(f"escritos: {len(r['escritos'])} · rejeitados: {len(r['rejeitados'])} · erros: {len(r['erros'])} "
           f"· custo: US$ {r['custo']:.2f}" + (f" · PAROU: {r['parou']}" if r["parou"] else ""))
-    for rel in r["rejeitados"]:
-        print(f"  rejeitado: {rel}")
+    for motivo in r["rejeitados"]:
+        print(f"  rejeitado: {motivo}")
     for erro in r["erros"]:
         print(f"  erro: {erro}")
     return 0

@@ -55,3 +55,8 @@ def test_cli_nao_arquivo_nem_pasta_bloqueia(tmp_path):
     r = subprocess.run([sys.executable, str(script), "people/pipe"], cwd=tmp_path, capture_output=True, text=True)
     assert r.returncode == 1
     assert "AVISO: não é arquivo: people/pipe" in r.stdout
+
+def test_valor_em_dinheiro():
+    for t in ["R$ 1.234,56", "US$ 300", "1.234,56", "custa R$50", "€ 20", "total 99,90"]:
+        assert varrer.achados(t) == ["valor"], t
+    assert varrer.achados("reunião 2026-11-10 às 14:00 e 14:30, versão 3.2.1") == []

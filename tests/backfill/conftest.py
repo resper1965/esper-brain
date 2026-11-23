@@ -8,6 +8,7 @@ create table email_msg(id integer primary key, fonte_id integer not null, extern
 create table email_respondido(fonte_id integer not null, endereco text not null, em text not null, primary key(fonte_id, endereco));
 create table contato_google_email(conta text not null, email text not null, telefone text not null default '', nome text,
   primary key (conta, email, telefone));
+create table agenda_fonte(id integer primary key, conta text not null, estado text not null default 'a_decidir');
 create table agenda_evento(id integer primary key, fonte_id integer not null, externo_id text not null, inicio_utc text not null,
   fim_utc text not null, dia_local text not null, dia_fim_local text not null, titulo text, participantes_qtd integer not null default 0,
   status text, organizador_nome text, privado integer not null default 0);
@@ -34,10 +35,16 @@ def _popular(con):
                     (i, 1, f"m{i}", rem, ass, em, lista, classe))
     con.execute("insert into email_msg(id,fonte_id,externo_id,remetente,assunto,recebida_em,lista,classe) values (10,3,'m10','carlos@acme.com.br','Contrato','2026-11-06T10:00:00Z',0,'normal')")
     con.execute("insert into email_msg(id,fonte_id,externo_id,remetente,assunto,recebida_em,lista,classe,estado) values (11,1,'m11','lixo@acme.com.br','Lixo','2026-11-07T10:00:00Z',0,'normal','na_lixeira')")
-    con.execute("insert into email_respondido values (2,'bob@acme.com.br','2026-11-01T12:00:00Z')")
-    con.execute("insert into email_respondido values (1,'antigo@acme.com.br','2026-01-15T10:00:00Z')")
-    con.execute("insert into email_respondido values (3,'naoconsentido@acme.com.br','2026-11-08T10:00:00Z')")
+    # email_respondido real: todo To/Cc dos enviados, com em = hora do sync, mais linha sentinela endereco=''
+    sync = "2026-11-23T06:00:00Z"
+    con.execute("insert into email_respondido values (2,'bob@acme.com.br',?)", (sync,))
+    con.execute("insert into email_respondido values (1,'so-respondido@acme.com.br',?)", (sync,))
+    con.execute("insert into email_respondido values (3,'naoconsentido@acme.com.br',?)", (sync,))
+    con.executemany("insert into email_respondido values (?,'',?)", [(1, sync), (2, sync), (3, sync)])
     con.execute("insert into contato_google_email values ('resper@gmail.com','ana@acme.com.br','','Ana Souza')")
+    con.execute("insert into agenda_fonte values (1,'resper@gmail.com','sim'),(2,'velha@esper.ws','nao')")
+    con.execute("insert into agenda_evento(id,fonte_id,externo_id,inicio_utc,fim_utc,dia_local,dia_fim_local,titulo,participantes_qtd,status,organizador_nome) "
+                "values (5,2,'e5','2026-11-16T13:00:00Z','2026-11-16T14:00:00Z','2026-11-16','2026-11-16','Agenda nao','2','confirmed','Calendario Nao')")
     con.execute("insert into agenda_evento(id,fonte_id,externo_id,inicio_utc,fim_utc,dia_local,dia_fim_local,titulo,participantes_qtd,status,organizador_nome) "
                 "values (1,1,'e1','2026-11-12T13:00:00Z','2026-11-12T14:00:00Z','2026-11-12','2026-11-12','Kickoff Acme',3,'confirmed','Ana Souza'),"
                 "(2,1,'e2','2026-11-13T13:00:00Z','2026-11-13T14:00:00Z','2026-11-13','2026-11-13','Follow-up Acme',3,'confirmed','Ana Souza')")

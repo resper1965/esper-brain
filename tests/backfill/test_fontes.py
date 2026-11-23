@@ -22,14 +22,15 @@ def test_emails_so_contas_sim_e_sem_lixeira(banco):
 def test_contas_respondidos_contatos(banco):
     con = fontes.abrir(banco)
     assert fontes.contas_proprias(con) == {"resper@gmail.com", "ricardo@ness.com.br", "velha@esper.ws"}
-    assert fontes.respondidos(con) == {"bob@acme.com.br": "2026-11-01", "antigo@acme.com.br": "2026-01-15"}
+    # conta 'nao' ignorada; sentinela endereco='' excluída
+    assert fontes.respondidos(con) == {"bob@acme.com.br", "so-respondido@acme.com.br"}
     assert fontes.contatos(con)["ana@acme.com.br"] == "Ana Souza"
 
 def test_agenda_e_projetos(banco):
     con = fontes.abrir(banco)
     ag = fontes.agenda(con, "2026-08-25")
     assert {a["organizador"] for a in ag} == {"Ana Souza"}
-    assert len(ag) == 2
+    assert len(ag) == 2                      # evento da agenda_fonte 'nao' não entra
     pj = fontes.projetos(con)
     assert pj == [{"id": 7, "nome": "Trocar de carro", "objetivo": "SUV híbrido", "status": "ativo",
                    "prazo": "2027-03-31", "pessoas": ["Vendedor Toyota"]}]
