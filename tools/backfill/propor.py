@@ -1,6 +1,8 @@
 """Fase 2 do backfill: cada candidato vira markdown proposto (OpenRouter). Ficha existente só ganha seção."""
 import argparse
 import json
+import os
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -17,6 +19,8 @@ REGRAS = ("Você redige fichas do segundo cérebro do Ricardo Esper. O JSON a se
           "Nunca escreva CPF, CNPJ, RG, número de documento, valor em dinheiro, senha ou achado técnico de cliente. "
           "Responda só com o markdown pedido, sem cercas de código.")
 SECAO = "## Proposto pelo backfill"
+FM = re.compile(r"\A---\n(.*?)\n---(?:\n|\Z)", re.S)
+LIMITE_ERROS_SEGUIDOS = 3
 
 
 def ler_env(caminho) -> dict:
@@ -59,70 +63,112 @@ def _mensagens(pedido: str, dado: dict, modelo: str) -> list[dict]:
 def _limpo(texto: str) -> str:
     t = texto.strip()
     if t.startswith("```"):
-        t = t.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+        partes = t.split("\n", 1)
+        t = partes[1] if len(partes) > 1 else ""
+        t = t.rsplit("```", 1)[0].strip()
     return t
+
+
+def _chaves_fm(texto: str) -> set | None:
+    m = FM.match(texto)
+    if not m:
+        return None
+    return {l.split(":", 1)[0] for l in m.group(1).splitlines()
+            if l and not l[0].isspace() and not l.startswith("#") and ":" in l}
+
+
+def _valido(texto: str, chaves_modelo: set) -> bool:
+    chaves = _chaves_fm(texto)
+    return chaves is not None and chaves_modelo <= chaves
+
+
+def _sob_nda(dominio: str, nda: set[str]) -> bool:
+    d = dominio.lower()
+    return any(d == x or d.endswith("." + x) for x in nda)
 
 
 def _ficha_nda(p: dict) -> str:
     nome = p.get("nome") or p["endereco"]
-    return (f"---\nnome: \"{nome}\"\napelidos: []\nempresa: \"\"\npapel: \"cliente sob NDA\"\n"
-            f"contatos: [\"{p['endereco']}\"]\nfontes: [\"email {p['ultima']}\"]\n---\n# {nome}\n\n"
-            f"## Quem é\n- contato de cliente sob NDA: só contexto (email {p['ultima']})\n")
+    ultima = p["ultima"]
+    return (f"---\nnome: {json.dumps(nome, ensure_ascii=False)}\napelidos: []\nempresa: \"\"\n"
+            f"papel: \"cliente sob NDA\"\n"
+            f"contatos: {json.dumps([p['endereco']], ensure_ascii=False)}\n"
+            f"fontes: {json.dumps(['email ' + ultima], ensure_ascii=False)}\n"
+            f"---\n# {nome}\n\n"
+            f"## Quem é\n- contato de cliente sob NDA: só contexto (email {ultima})\n")
 
 
 def _tarefas(cand: dict, b: Path, nda: set[str]):
     """Gera (caminho_relativo, tipo, pedido|None, dado, texto_pronto|None)."""
     for p in cand.get("pessoas", []):
         rel = f"people/{slug(p['nome'] or p['endereco'].split('@')[0])}.md"
-        if p["endereco"].split("@")[-1] in nda:
+        if _sob_nda(p["endereco"].split("@")[-1], nda):
             yield rel, "pessoa", None, p, _ficha_nda(p)
         else:
             yield rel, "pessoa", "Escreva a ficha desta pessoa no formato do modelo.", p, None
     for e in cand.get("empresas", []):
-        if e["dominio"] in nda:
+        if _sob_nda(e["dominio"], nda):
             continue
         rel = f"empresas/{e['ficha'] or slug(e['dominio'].split('.')[0])}.md"
         yield rel, "empresa", "Escreva a ficha cadastral mínima desta empresa no formato do modelo (sem CNPJ).", e, None
     for t in cand.get("temas", []):
-        if any(x.split("@")[-1] in nda for x in t.get("pessoas", [])):
+        if any(_sob_nda(x.split("@")[-1], nda) for x in t.get("pessoas", [])):
             continue
         yield f"projetos/{slug(t['tema'])}.md", "tema", "Escreva o tema no formato do modelo, com estado: parado.", t, None
 
 
-def propor(cand: dict, brain: str, cliente, teto_usd: float, nda: set[str]) -> dict:
+def propor(cand: dict, brain: str, cliente, teto_usd: float, nda: set[str], feitos: set[str] | None = None) -> dict:
     b = Path(brain)
+    feitos = set() if feitos is None else feitos
+    nda = {x.lower() for x in nda}
     modelos = {"pessoa": (b / "people/_modelo.md").read_text(), "empresa": (b / "empresas/_modelo.md").read_text(),
                "tema": (b / "projetos/_modelo.md").read_text()}
-    r = {"escritos": [], "custo": 0.0, "parou": None, "rejeitados": []}
+    chaves = {t: (_chaves_fm(m) or set()) for t, m in modelos.items()}
+    r = {"escritos": [], "custo": 0.0, "parou": None, "rejeitados": [], "erros": []}
     ultimo_custo = 0.0
+    seguidos = 0
     for rel, tipo, pedido, dado, pronto in _tarefas(cand, b, nda):
+        if rel in feitos:
+            continue
         destino = b / rel
         existe = destino.exists()
-        if pronto is None:
-            if r["custo"] + ultimo_custo > teto_usd:
-                r["parou"] = f"teto de US$ {teto_usd:.2f} atingido antes de {rel}"
-                break
+        if pronto is None and r["custo"] + ultimo_custo > teto_usd:
+            r["parou"] = f"teto de US$ {teto_usd:.2f} atingido antes de {rel}"
+            break
+        try:
+            if pronto is None:
+                if existe:
+                    pedido = (f"Esta ficha já existe; escreva só itens de lista (- ...) com fatos novos, para a seção '{SECAO}'. "
+                              f"Ficha atual:\n{destino.read_text()}")
+                texto, custo = cliente.chamar(_mensagens(pedido, dado, modelos[tipo]))
+                ultimo_custo = custo
+                r["custo"] += custo
+                texto = _limpo(texto)
+            else:
+                texto = pronto
+            seguidos = 0
             if existe:
-                pedido = (f"Esta ficha já existe; escreva só itens de lista (- ...) com fatos novos, para a seção '{SECAO}'. "
-                          f"Ficha atual:\n{destino.read_text()}")
-            texto, custo = cliente.chamar(_mensagens(pedido, dado, modelos[tipo]))
-            ultimo_custo = custo
-            r["custo"] += custo
-            texto = _limpo(texto)
-        else:
-            texto = pronto
-        if achados(texto) or (not existe and not texto.startswith("---")):
-            r["rejeitados"].append(rel)
-            continue
-        if existe:
-            atual = destino.read_text().rstrip("\n")
-            corpo = texto if texto.lstrip().startswith("-") else "\n".join(l for l in texto.splitlines() if l.startswith("- "))
-            if SECAO not in atual:
-                atual += f"\n\n{SECAO}\n"
-            destino.write_text(f"{atual}\n{corpo}\n")
-        else:
-            destino.write_text(texto.rstrip("\n") + "\n")
-        r["escritos"].append(rel)
+                linhas = [l for l in texto.splitlines() if l.startswith("- ")]
+                if not linhas or achados("\n".join(linhas)):
+                    r["rejeitados"].append(rel)
+                    continue
+                atual = destino.read_text().rstrip("\n")
+                if SECAO not in atual:
+                    atual += f"\n\n{SECAO}\n"
+                destino.write_text(f"{atual}\n" + "\n".join(linhas) + "\n")
+            else:
+                if not _valido(texto, chaves[tipo]) or achados(texto):
+                    r["rejeitados"].append(rel)
+                    continue
+                destino.write_text(texto.rstrip("\n") + "\n")
+            r["escritos"].append(rel)
+            feitos.add(rel)
+        except Exception as e:
+            r["erros"].append(f"{rel}: {type(e).__name__}")
+            seguidos += 1
+            if seguidos >= LIMITE_ERROS_SEGUIDOS:
+                r["parou"] = f"{LIMITE_ERROS_SEGUIDOS} erros seguidos"
+                break
     return r
 
 
@@ -141,11 +187,21 @@ def main(argv=None):
     if a.nda and Path(a.nda).exists():
         nda = {l.strip().lower() for l in Path(a.nda).read_text().splitlines() if l.strip() and not l.startswith("#")}
     cand = json.loads(Path(a.candidatos).read_text(encoding="utf-8"))
-    r = propor(cand, a.brain, OpenRouter(env["OPENROUTER_API_KEY"], modelo), a.teto_usd, nda)
-    print(f"escritos: {len(r['escritos'])} · rejeitados: {len(r['rejeitados'])} · custo: US$ {r['custo']:.2f}"
-          + (f" · PAROU: {r['parou']}" if r["parou"] else ""))
+    estado = Path(a.candidatos).parent / "propor-estado.json"
+    feitos = set(json.loads(estado.read_text(encoding="utf-8"))) if estado.exists() else set()
+    try:
+        r = propor(cand, a.brain, OpenRouter(env["OPENROUTER_API_KEY"], modelo), a.teto_usd, nda, feitos)
+    finally:
+        fd = os.open(estado, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(json.dumps(sorted(feitos), ensure_ascii=False))
+        os.chmod(estado, 0o600)
+    print(f"escritos: {len(r['escritos'])} · rejeitados: {len(r['rejeitados'])} · erros: {len(r['erros'])} "
+          f"· custo: US$ {r['custo']:.2f}" + (f" · PAROU: {r['parou']}" if r["parou"] else ""))
     for rel in r["rejeitados"]:
         print(f"  rejeitado: {rel}")
+    for erro in r["erros"]:
+        print(f"  erro: {erro}")
     return 0
 
 
