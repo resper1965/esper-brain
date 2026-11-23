@@ -66,6 +66,27 @@ def _sem_acento(s: str) -> str:
     return "".join(ch for ch in unicodedata.normalize("NFD", s.lower()) if unicodedata.category(ch) != "Mn")
 
 
+_PLURAIS = (("oes", "ao", 1), ("aes", "ao", 1), ("aos", "ao", 1), ("ais", "al", 2), ("eis", "el", 2),
+            ("ois", "ol", 2), ("uis", "ul", 2), ("res", "r", 2), ("zes", "z", 2), ("ses", "s", 2), ("ns", "m", 2))
+
+
+def _radical(palavra: str) -> str:
+    """Forma singular aproximada (já sem acento e minúscula): 'filhas' → 'filha', 'questoes' → 'questao'."""
+    if len(palavra) <= 3 or not palavra.endswith("s"):
+        return palavra
+    for fim, troca, base_min in _PLURAIS:
+        if palavra.endswith(fim) and len(palavra) - len(fim) >= base_min:
+            return palavra[: -len(fim)] + troca
+    if palavra.endswith(("us", "is")):  # onibus, lapis, virus, pais: não são plural de -u/-i
+        return palavra
+    return palavra[:-1]
+
+
+def _termos(termo: str) -> list[str]:
+    """Palavras do termo, sem acento, cada uma no radical: busca casa singular e plural."""
+    return [_radical(w) for w in re.findall(r"\w+", _sem_acento(termo))]
+
+
 def _frontmatter(txt: str) -> dict[str, str]:
     m = re.match(r"^---\n(.*?)\n---\n", txt, re.S)
     if not m:
@@ -102,10 +123,12 @@ def ler(caminho: str) -> str:
 
 
 def buscar(termo: str, pasta: str = "") -> str:
-    """Busca sem diferenciar maiúsculas nem acentos. Devolve caminho:linha: texto (até 40)."""
+    """Busca sem diferenciar maiúsculas, acentos, singular e plural. Com várias palavras, a linha precisa ter todas.
+    Devolve caminho:linha: texto (até 40)."""
     alvo = _sem_acento(termo.strip())
     if len(alvo) < 2:
         raise Recusa("termo curto demais")
+    termos = _termos(termo)
     base = RAIZ
     if pasta:
         c = pasta.strip().strip("/")
@@ -127,7 +150,8 @@ def buscar(termo: str, pasta: str = "") -> str:
         if rel.startswith(BUSCA_PROIBIDA) or f.read_bytes()[:9] == b"\x00GITCRYPT":
             continue
         for n, linha in enumerate(f.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-            if alvo in _sem_acento(linha):
+            linha_n = _sem_acento(linha)
+            if alvo in linha_n or (termos and all(x in linha_n for x in termos)):
                 achados.append(f"{rel}:{n}: {linha.strip()[:200]}")
                 if len(achados) >= MAX_ACHADOS:
                     return "\n".join(achados) + "\n[... mais resultados: refine o termo]"

@@ -107,3 +107,23 @@ def test_gravar_caminho_com_espaco(cerebro):
     assert m.gravar("teste espaço").startswith("gravado:")
     st = subprocess.run(["git", "-C", str(cerebro), "status", "--porcelain"], capture_output=True, text=True).stdout
     assert st == ""
+
+
+@pytest.mark.parametrize("palavra,radical", [
+    ("filhas", "filha"), ("filha", "filha"), ("holdings", "holding"), ("patrimoniais", "patrimonial"),
+    ("pendências", "pendencia"), ("pendentes", "pendente"), ("questões", "questao"), ("pães", "pao"),
+    ("papéis", "papel"), ("carros", "carro"), ("mês", "mes"), ("gás", "gas"), ("ônibus", "onibus"),
+])
+def test_radical(palavra, radical):
+    assert m._radical(m._sem_acento(palavra)) == radical
+
+
+def test_buscar_acha_singular_e_plural_e_varias_palavras(cerebro):
+    (cerebro / "empresas").mkdir()
+    (cerebro / "empresas/baalbeck.md").write_text("papel: titular — holding patrimonial do Ricardo\n", encoding="utf-8")
+    (cerebro / "pessoal/familia").mkdir(parents=True)
+    (cerebro / "pessoal/familia/louise.md").write_text("- parentesco: filha\n", encoding="utf-8")
+    assert "louise.md" in m.buscar("filhas")
+    assert "baalbeck.md" in m.buscar("holdings patrimoniais")
+    assert "nada encontrado" == m.buscar("holdings vinicolas")      # todas as palavras precisam estar na linha
+    assert "baalbeck.md" in m.buscar("Holding Patrimonial")          # frase exata continua achando

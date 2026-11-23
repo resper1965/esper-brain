@@ -8,6 +8,10 @@ import time
 import unicodedata
 from pathlib import Path
 
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from esper_mcp import _radical  # noqa: E402  mesma regra do buscar da Gabi
+
 COLUNAS = ["n", "camada", "pergunta", "fonte_esperada", "paginas_achadas",
            "fonte_bateu", "latencia_ms", "erro"]
 IGNORAR = {"pessoal/cofre", ".git", ".superpowers", "docs", "tools", "tests",
@@ -78,7 +82,7 @@ def markdown(brain, perguntas):
     saida = []
     for p in perguntas:
         t0 = time.perf_counter()
-        termos = [norm(k) for k in p.get("palavras_chave") or palavras_da_pergunta(p["pergunta"])]
+        termos = [_radical(norm(k)) for k in p.get("palavras_chave") or palavras_da_pergunta(p["pergunta"])]  # singular/plural, como o buscar
         pontos = []
         for f in sorted(brain.rglob("*.md")):
             rel = f.relative_to(brain).as_posix()
