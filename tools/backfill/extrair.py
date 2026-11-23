@@ -27,8 +27,12 @@ def normalizar_assunto(s: str) -> str:
     return re.sub(r"\s+", " ", PREFIXO.sub("", s or "")).strip().lower()
 
 
+def _acumulador() -> dict:
+    return {"datas": [], "contas": set(), "assuntos": defaultdict(int)}
+
+
 def pessoas(emails, respondidos, contatos, proprios, minimo=3) -> list[dict]:
-    acc = defaultdict(lambda: {"datas": [], "contas": set(), "assuntos": defaultdict(int)})
+    acc = defaultdict(_acumulador)
     for e in emails:
         end = e["remetente"]
         if not end or end in proprios or e["lista"] or e["classe"] == "lixo" or e_automatico(end):
@@ -39,7 +43,7 @@ def pessoas(emails, respondidos, contatos, proprios, minimo=3) -> list[dict]:
         a["assuntos"][normalizar_assunto(e["assunto"])] += 1
     for end in respondidos:
         if end not in proprios and not e_automatico(end):
-            acc[end]  # garante a entrada
+            acc.setdefault(end, _acumulador())
     saida = []
     for end, a in acc.items():
         respondido = end in respondidos
@@ -116,7 +120,8 @@ def extrair(banco: str, brain: str, dias: int, hoje: date, paperless_cfg=None) -
     con = fontes.abrir(banco)
     proprios = fontes.contas_proprias(con)
     em = fontes.emails(con, desde)
-    ps = pessoas(em, fontes.respondidos(con), fontes.contatos(con), proprios)
+    respondidos = {e: d for e, d in fontes.respondidos(con).items() if d >= desde}
+    ps = pessoas(em, respondidos, fontes.contatos(con), proprios)
     b = Path(brain)
     c = {"gerado_em": hoje.isoformat(), "janela_desde": desde, "pessoas": ps,
          "pessoas_agenda": pessoas_agenda(fontes.agenda(con, desde)),
@@ -149,11 +154,15 @@ def main(argv=None):
     if a.resumo:
         print(resumo(json.loads(Path(a.resumo).read_text(encoding="utf-8"))))
         return 0
+    faltando = [nome for nome, valor in (("--banco", a.banco), ("--brain", a.brain), ("--saida", a.saida)) if not valor]
+    if faltando:
+        ap.error(f"obrigatório sem --resumo: {', '.join(faltando)}")
     cfg = None
     if os.environ.get("PAPERLESS_URL") and os.environ.get("PAPERLESS_TOKEN"):
         cfg = {"url": os.environ["PAPERLESS_URL"], "token": os.environ["PAPERLESS_TOKEN"]}
     c = extrair(a.banco, a.brain, a.dias, date.today(), cfg)
     fd = os.open(a.saida, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    os.fchmod(fd, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(c, f, ensure_ascii=False, indent=1)
     print(resumo(c))

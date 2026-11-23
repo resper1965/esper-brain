@@ -22,7 +22,7 @@ def test_emails_so_contas_sim_e_sem_lixeira(banco):
 def test_contas_respondidos_contatos(banco):
     con = fontes.abrir(banco)
     assert fontes.contas_proprias(con) == {"resper@gmail.com", "ricardo@ness.com.br", "velha@esper.ws"}
-    assert fontes.respondidos(con) == {"bob@acme.com.br": "2026-11-01"}
+    assert fontes.respondidos(con) == {"bob@acme.com.br": "2026-11-01", "antigo@acme.com.br": "2026-01-15"}
     assert fontes.contatos(con)["ana@acme.com.br"] == "Ana Souza"
 
 def test_agenda_e_projetos(banco):

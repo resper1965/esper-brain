@@ -37,3 +37,18 @@ def test_resumo_tem_contagens(banco, tmp_path):
     brain = tmp_path / "b"; (brain / "empresas").mkdir(parents=True); (brain / "projetos").mkdir()
     texto = extrair.resumo(extrair.extrair(banco, str(brain), 90, date(2026, 11, 23)))
     assert "pessoas: 2" in texto and "empresas: 1" in texto
+
+def test_main_fixa_600_em_arquivo_existente(banco, tmp_path, monkeypatch):
+    monkeypatch.delenv("PAPERLESS_URL", raising=False)
+    monkeypatch.delenv("PAPERLESS_TOKEN", raising=False)
+    brain = tmp_path / "b"; (brain / "empresas").mkdir(parents=True); (brain / "projetos").mkdir()
+    saida = tmp_path / "candidatos.json"
+    saida.write_text("velho")
+    saida.chmod(0o644)
+    assert extrair.main(["--banco", banco, "--brain", str(brain), "--saida", str(saida)]) == 0
+    assert saida.stat().st_mode & 0o777 == 0o600
+
+def test_main_exige_argumentos_sem_resumo():
+    import pytest
+    with pytest.raises(SystemExit):
+        extrair.main(["--saida", "/tmp/x.json"])

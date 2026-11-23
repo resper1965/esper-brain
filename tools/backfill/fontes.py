@@ -21,7 +21,8 @@ def emails(con, desde: str) -> list[dict]:
 
 
 def respondidos(con) -> dict[str, str]:
-    sql = "select lower(endereco) e, max(em) em from email_respondido group by lower(endereco)"
+    sql = ("select lower(r.endereco) e, max(r.em) em from email_respondido r join email_fonte f on f.id=r.fonte_id "
+           "where f.estado='sim' group by lower(r.endereco)")
     return {r["e"]: r["em"][:10] for r in con.execute(sql)}
 
 

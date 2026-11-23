@@ -35,6 +35,8 @@ def _popular(con):
     con.execute("insert into email_msg(id,fonte_id,externo_id,remetente,assunto,recebida_em,lista,classe) values (10,3,'m10','carlos@acme.com.br','Contrato','2026-11-06T10:00:00Z',0,'normal')")
     con.execute("insert into email_msg(id,fonte_id,externo_id,remetente,assunto,recebida_em,lista,classe,estado) values (11,1,'m11','lixo@acme.com.br','Lixo','2026-11-07T10:00:00Z',0,'normal','na_lixeira')")
     con.execute("insert into email_respondido values (2,'bob@acme.com.br','2026-11-01T12:00:00Z')")
+    con.execute("insert into email_respondido values (1,'antigo@acme.com.br','2026-01-15T10:00:00Z')")
+    con.execute("insert into email_respondido values (3,'naoconsentido@acme.com.br','2026-11-08T10:00:00Z')")
     con.execute("insert into contato_google_email values ('resper@gmail.com','ana@acme.com.br','','Ana Souza')")
     con.execute("insert into agenda_evento(id,fonte_id,externo_id,inicio_utc,fim_utc,dia_local,dia_fim_local,titulo,participantes_qtd,status,organizador_nome) "
                 "values (1,1,'e1','2026-11-12T13:00:00Z','2026-11-12T14:00:00Z','2026-11-12','2026-11-12','Kickoff Acme',3,'confirmed','Ana Souza'),"
