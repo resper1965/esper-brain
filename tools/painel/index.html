@@ -42,7 +42,7 @@ button:disabled{cursor:default;opacity:.6}
 
 /* topo */
 .topo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:var(--topo);backdrop-filter:blur(6px);color:#fff}
-.topo h1{margin:0 8px 0 2px;font-size:18px;font-weight:700;letter-spacing:.2px}
+.topo h1{margin:0 8px 0 2px;font-size:22px;font-weight:700;letter-spacing:.2px}
 .busca{flex:1 1 200px;max-width:320px;position:relative}
 .busca input{width:100%;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.18);color:#fff;padding:0 10px 0 30px}
 .busca input::placeholder{color:rgba(255,255,255,.8)}
@@ -114,7 +114,7 @@ dialog::backdrop{background:var(--veu)}
 #dlg-cartao[open]{animation:entra .16s ease-out}
 @keyframes entra{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
 .m-cab{position:sticky;top:0;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:16px 16px 12px 24px;background:var(--modal);border-bottom:1px solid var(--borda)}
-.m-cab h2{margin:0;font-size:20px;line-height:26px;font-weight:600;overflow-wrap:anywhere}
+.m-cab h2{margin:0;font-size:22px;line-height:28px;font-weight:600;overflow-wrap:anywhere}
 .m-sub{margin:4px 0 0;font-size:12px;color:var(--fraco);overflow-wrap:anywhere}
 .m-sub b{color:var(--suave);font-weight:600}
 .m-cab .etiquetas{margin:8px 0 0}
@@ -148,7 +148,7 @@ dialog::backdrop{background:var(--veu)}
 /* celular */
 @media (max-width:640px){
   .topo{padding:8px 10px;gap:6px}
-  .topo h1{font-size:16px}
+  .topo h1{font-size:19px}
   .busca{order:9;flex-basis:100%;max-width:none}
   .quadro{scroll-snap-type:x mandatory;padding:10px;gap:10px;scroll-padding:10px}
   .lista{flex-basis:86vw;width:86vw;scroll-snap-align:start}
