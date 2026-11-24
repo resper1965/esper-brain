@@ -277,3 +277,8 @@ def test_socket_privado(tmp_path):
         assert (p.stat().st_mode & 0o777) == 0o600
     finally:
         s.close()
+
+
+def test_cabecalhos_contra_embutir(cli):
+    r = cli.get("/api/quadro", headers=H)
+    assert r.headers["x-frame-options"] == "DENY" and "frame-ancestors 'none'" in r.headers["content-security-policy"]

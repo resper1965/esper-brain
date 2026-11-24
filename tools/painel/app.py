@@ -178,10 +178,11 @@ def mover(d: dict) -> dict:
     pasta = esper_mcp._pasta_do_tema(area, empresa, marca, frente, holding)
     if f.parent == esper_mcp.RAIZ / pasta:
         return {"ok": True, "mudou": False, "caminho": rel, "cartao": _cartao_de(rel)}
-    esper_mcp.mover_tema(rel, area, empresa, marca, frente, holding)
+    msg = esper_mcp.mover_tema(rel, area, empresa, marca, frente, holding)
     novo = f"{pasta}/{f.name}"
+    aviso = re.search(r"\(cliente .*? saiu[^)]*\)", msg)
     return {"ok": True, "mudou": True, "caminho": novo, "gravado": _gravar(f"painel: move {_titulo(f, fm)}"),
-            "cartao": _cartao_de(novo)}
+            "cartao": _cartao_de(novo), "aviso": aviso.group(0).strip("()") if aviso else ""}
 
 
 def campos(d: dict) -> dict:
@@ -318,7 +319,7 @@ def criar_app(raiz: Path, logins: set[str], origens: set[str]) -> Starlette:
     async def api_tema(req: Request):
         return await executar(tema, req.query_params.get("caminho", ""))
 
-    return Starlette(routes=[
+    app = Starlette(routes=[
         Route("/", get(index), methods=["GET"]),
         Route("/api/quadro", get(api_quadro), methods=["GET"]),
         Route("/api/tema", get(api_tema), methods=["GET"]),
@@ -327,6 +328,22 @@ def criar_app(raiz: Path, logins: set[str], origens: set[str]) -> Starlette:
         Route("/api/anotar", post(anotar), methods=["POST"]),
         Route("/api/criar", post(criar), methods=["POST"]),
     ])
+    return _cabecalhos_seguros(app)
+
+
+def _cabecalhos_seguros(app):
+    """Não deixa a página ser embutida em outra (clickjacking) e não deixa o navegador adivinhar tipos."""
+    extras = [(b"x-frame-options", b"DENY"), (b"content-security-policy", b"frame-ancestors 'none'"),
+              (b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer")]
+
+    async def asgi(scope, receive, send):
+        async def enviar(msg):
+            if msg["type"] == "http.response.start":
+                msg = {**msg, "headers": list(msg.get("headers", [])) + extras}
+            await send(msg)
+        await app(scope, receive, enviar)
+    return asgi
+
 
 
 def _lista(nome: str) -> set[str]:

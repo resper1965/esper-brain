@@ -20,6 +20,19 @@ curl -s -o /dev/null -w "%{http_code}\n" --unix-socket /run/esper-painel/painel.
 ```
 Abrir: https://srv-hermes.tail985643.ts.net:8448
 
+## Proatividade (skill `vigiar`) e ferramenta nova no Hermes
+```bash
+sudo -u ricardo -H bash -l <<'X'
+cd ~/esper-brain && PY=~/.local/share/esper-brain-mcp/bin/python
+cp ~/.hermes/config.yaml ~/.hermes/config.yaml.bak-painel-$(date +%Y%m%d-%H%M)
+$PY deploy/hermes/configurar_hermes.py ~/.hermes/config.yaml --python "$PY" --eb ~/esper-brain --gravar
+hermes cron create '40 8 * * *' 'Rode a skill vigiar no MODO DIÁRIO.' --name vigiar-diario --skill vigiar --deliver telegram
+hermes cron create '50 8 * * 1' 'Rode a skill vigiar no MODO SEMANAL (revisão por área).' --name vigiar-semanal --skill vigiar --deliver telegram
+X
+systemctl restart hermes-gateway
+```
+Conferir que o Hermes descarta a resposta `[SILENT]` (senão o diário manda "[SILENT]" nas manhãs calmas): `grep -rn "SILENT" ~ricardo/.hermes/hermes-agent/cron* | head`.
+
 ## Atualizar
 `git pull` no clone e `systemctl restart esper-painel`.
 

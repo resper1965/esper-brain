@@ -1,5 +1,6 @@
 [Unit]
 Description=Painel de temas do esper-brain (socket Unix; exposto só pelo tailscale serve na 8448)
+Wants=network-online.target
 After=network-online.target
 
 [Service]

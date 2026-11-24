@@ -400,7 +400,7 @@ async function mover(c, col, frente, cancelado) {
   let r = null;
   try {
     r = await api("/api/mover", corpo);
-    toast(r.mudou ? `“${c.tema}” foi para ${col.rotulo}.` : "Nada mudou.");
+    toast(r.mudou ? `“${c.tema}” foi para ${col.rotulo}.` + (r.aviso ? ` Atenção: ${r.aviso}.` : "") : "Nada mudou.");
   } catch (e) { toast(e.message, "erro"); }
   await carregar();
   return r;

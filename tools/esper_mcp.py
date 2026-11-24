@@ -246,7 +246,7 @@ def _mudancas() -> dict[str, str]:
     Arquivo sem commit (novo), ou git indisponível: data do mtime."""
     datas: dict[str, str] = {}
     try:
-        r = subprocess.run(["git", "-C", str(RAIZ), "log", "--format=%x00%cs", "--name-only", "--", "projetos"],
+        r = subprocess.run(["git", "-C", str(RAIZ), "-c", "core.quotePath=false", "log", "--format=%x00%cs", "--name-only", "--", "projetos"],
                            capture_output=True, text=True, check=True, timeout=60)
         for bloco in r.stdout.split("\x00")[1:]:
             data, *nomes = bloco.split("\n")
