@@ -24,7 +24,22 @@
   --veu:oklch(0.235 0.014 240 / 0.55);
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
+:root[data-theme="dark"]{
+  --papel:oklch(0.205 0.01 225);--folha:oklch(0.235 0.011 225);--papel-2:oklch(0.27 0.012 225);--papel-3:oklch(0.31 0.013 225);
+  --tinta:oklch(0.925 0.01 200);--tinta-2:oklch(0.77 0.015 210);--tinta-3:oklch(0.7 0.016 215);
+  --regra:oklch(0.33 0.012 225);--regra-forte:oklch(0.46 0.014 225);
+  --acento:oklch(0.77 0.1 248);--acento-hover:oklch(0.84 0.08 248);--sobre-acento:oklch(0.2 0.03 250);--acento-fundo:oklch(0.31 0.045 250);
+  --foco:oklch(0.78 0.12 248);--selecao:oklch(0.4 0.08 250);
+  --trilho:oklch(0.155 0.01 235);--trilho-2:oklch(0.215 0.012 235);--trilho-regra:oklch(0.28 0.012 235);--trilho-tinta:oklch(0.9 0.01 200);--trilho-tinta-2:oklch(0.72 0.014 220);
+  --carimbo-vermelho:oklch(0.74 0.14 25);--carimbo-vermelho-fundo:oklch(0.29 0.06 25);--carimbo-verde:oklch(0.78 0.12 155);
+  --carimbo-azul:oklch(0.77 0.1 250);--carimbo-grafite:oklch(0.78 0.015 215);
+  --ambar-borda:oklch(0.72 0.12 80);--ambar-tinta:oklch(0.92 0.06 85);--ambar-fundo:oklch(0.3 0.05 80);
+  --emp-ness:oklch(0.72 0.11 230);--emp-ionic:oklch(0.72 0.12 305);--emp-bekaa:oklch(0.79 0.12 70);
+  --sombra-camada:0 8px 24px -6px oklch(0 0 0 / 0.55),0 1px 3px oklch(0 0 0 / 0.4);
+  --veu:oklch(0.1 0.01 235 / 0.7);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --papel:oklch(0.205 0.01 225);--folha:oklch(0.235 0.011 225);--papel-2:oklch(0.27 0.012 225);--papel-3:oklch(0.31 0.013 225);
   --tinta:oklch(0.925 0.01 200);--tinta-2:oklch(0.77 0.015 210);--tinta-3:oklch(0.7 0.016 215);
   --regra:oklch(0.33 0.012 225);--regra-forte:oklch(0.46 0.014 225);
@@ -196,6 +211,7 @@ dialog[open]{animation:entra var(--dur) var(--curva)}
   .busca{order:2;flex-basis:100%;max-width:none}
   #concluidos{order:3;flex:1 1 auto}
   #recarregar{order:4;flex:1 1 auto}
+  #tema{order:5;flex:1 1 auto}
   .espaco{display:none}
   .quadro{scroll-snap-type:x mandatory;padding:var(--e3);gap:var(--e3);scroll-padding:var(--e3)}
   .lista{flex-basis:86vw;width:86vw;scroll-snap-align:start}
@@ -221,6 +237,7 @@ dialog[open]{animation:entra var(--dur) var(--curva)}
   <span class="espaco"></span>
   <span id="entrada" class="contador" title="Itens esperando na entrada.md">Entrada: …</span>
   <button id="recarregar" class="botao-topo" type="button">Recarregar</button>
+  <button id="tema" class="botao-topo" type="button" aria-label="Trocar entre tema claro e escuro">Escuro</button>
 </header>
 <main id="quadro" class="quadro" aria-label="Quadro de temas"><p class="carregando">Carregando…</p></main>
 <dialog id="dlg-cartao" aria-labelledby="m-titulo"></dialog>
@@ -719,6 +736,20 @@ $("#busca").addEventListener("input", ev => {
   tBusca = setTimeout(() => { S.busca = norm(ev.target.value.trim()); render(); }, 120);
 });
 $("#busca").addEventListener("keydown", ev => { if (ev.key === "Escape" && ev.target.value) { ev.target.value = ""; S.busca = ""; render(); } });
+(function () {  // tema claro/escuro: escolha guardada neste navegador; sem escolha, segue o sistema
+  const raiz = document.documentElement, b = $("#tema");
+  const sistemaEscuro = () => window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const atual = () => raiz.dataset.theme || (sistemaEscuro() ? "dark" : "light");
+  const rotular = () => { const e = atual() === "dark"; b.textContent = e ? "Claro" : "Escuro"; b.setAttribute("aria-pressed", String(e)); };
+  try { const s = localStorage.getItem("gabi.temas.tema"); if (s === "dark" || s === "light") raiz.dataset.theme = s; } catch (_) {}
+  rotular();
+  b.addEventListener("click", () => {
+    raiz.dataset.theme = atual() === "dark" ? "light" : "dark";
+    try { localStorage.setItem("gabi.temas.tema", raiz.dataset.theme); } catch (_) {}
+    rotular();
+  });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rotular);
+})();
 $("#recarregar").addEventListener("click", async () => { await carregar(); toast("Quadro atualizado."); });
 document.addEventListener("keydown", ev => {
   if (ev.key === "/" && !dlg.open && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) { ev.preventDefault(); $("#busca").focus(); }
