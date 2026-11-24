@@ -1,0 +1,25 @@
+[Unit]
+Description=Painel de temas do esper-brain (socket Unix; exposto só pelo tailscale serve na 8448)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=ricardo
+Group=ricardo
+# o socket fica numa pasta 0700 do ricardo: só ele e o root (tailscaled) conectam
+RuntimeDirectory=esper-painel
+RuntimeDirectoryMode=0700
+EnvironmentFile=/etc/esper-painel.env
+Environment=ESPER_BRAIN=/home/ricardo/esper-brain
+Environment=ESPER_PAINEL_SOCK=/run/esper-painel/painel.sock
+Environment=HOME=/home/ricardo
+ExecStart=/home/ricardo/.local/share/esper-brain-mcp/bin/python /home/ricardo/esper-brain/tools/painel/app.py
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

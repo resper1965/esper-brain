@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import os
 import re
 import subprocess
@@ -30,8 +31,8 @@ MAX_LER = 60_000
 MAX_ESCREVER = 60_000
 MAX_ACHADOS = 40
 AREAS = ("familia", "trabalho", "patrimonio", "saude", "casa", "pessoal")
-EMPRESAS = {"ness": "CEO", "ionic": "CISO e acionista", "bekaa": "titular", "pf": "freelancer"}
-MARCAS = {"ness": ("trustness", "forense.io")}
+EMPRESAS = {"ness": "CEO", "ionic": "CISO e acionista", "bekaa": "titular"}
+MARCAS = {"ness": ("forense.io", "trustness", "secops")}
 FRENTES_IONIC = ("governanca", "produto", "operacao", "pessoas", "acionista")
 HOLDINGS = ("baalbeck", "fakiha")
 
@@ -240,11 +241,33 @@ def _arquivos_de_tema():
         yield f
 
 
+def _mudancas() -> dict[str, str]:
+    """Caminho relativo → data (AAAA-MM-DD) do último commit que tocou o arquivo, em uma só chamada ao git.
+    Arquivo sem commit (novo), ou git indisponível: data do mtime."""
+    datas: dict[str, str] = {}
+    try:
+        r = subprocess.run(["git", "-C", str(RAIZ), "-c", "core.quotePath=false", "log", "--format=%x00%cs", "--name-only", "--", "projetos"],
+                           capture_output=True, text=True, check=True, timeout=60)
+        for bloco in r.stdout.split("\x00")[1:]:
+            data, *nomes = bloco.split("\n")
+            for n in nomes:
+                if n.strip():
+                    datas.setdefault(n.strip(), data.strip())
+    except (subprocess.SubprocessError, OSError):
+        datas = {}
+    out = {}
+    for f in _arquivos_de_tema():
+        rel = f.relative_to(RAIZ).as_posix()
+        out[rel] = datas.get(rel) or dt.date.fromtimestamp(f.stat().st_mtime).isoformat()
+    return out
+
+
 def listar_temas(area: str = "", empresa: str = "") -> str:
     """Temas: caminho | tema | apelidos | área | empresa · cliente | estado | próximo passo | prazo | última mudança.
-    Filtra por área (familia, trabalho, patrimonio, saude, casa, pessoal) e por empresa (ness, ionic, bekaa, pf)."""
+    Filtra por área (familia, trabalho, patrimonio, saude, casa, pessoal) e por empresa (ness, ionic, bekaa)."""
     area, empresa = (area or "").strip().lower(), (empresa or "").strip().lower()
     linhas = []
+    mudancas = _mudancas()
     for f in _arquivos_de_tema():
         rel = f.relative_to(RAIZ).as_posix()
         fm = _frontmatter(f.read_text(encoding="utf-8"))
@@ -254,7 +277,7 @@ def listar_temas(area: str = "", empresa: str = "") -> str:
         if (area and a != area) or (empresa and e != empresa):
             continue
         quem = " · ".join(x for x in (e, fm.get("cliente", "")) if x)
-        mud = dt.date.fromtimestamp(f.stat().st_mtime).isoformat()
+        mud = mudancas.get(rel, "")
         linhas.append(" | ".join([rel, fm.get("tema", "?"), fm.get("apelidos", "").strip("[]"), a, quem, fm.get("estado", "?"),
                                   fm.get("proximo_passo", ""), fm.get("prazo", ""), mud]))
     if linhas:
@@ -264,7 +287,7 @@ def listar_temas(area: str = "", empresa: str = "") -> str:
 
 def criar_tema(slug: str, tema: str, apelidos: list[str] | None = None, area: str = "", empresa: str = "",
                marca: str = "", cliente: str = "", frente: str = "", holding: str = "") -> str:
-    """Cria o tema na pasta da área. Trabalho: empresa (ness|ionic|bekaa|pf), marca, cliente; IONIC: frente;
+    """Cria o tema na pasta da área. Trabalho: empresa (ness|ionic|bekaa), marca, cliente; IONIC: frente;
     Patrimônio: holding (baalbeck|fakiha). Não grava."""
     if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", slug or ""):
         raise Recusa("slug: minúsculas, números e hífens, sem acento (ex.: trocar-de-carro)")
@@ -461,6 +484,49 @@ def entrada_processar(numeros: list[int]) -> str:
     return f"processadas {len(feitos)} (falta gravar)"
 
 
+def temas_atencao(dias_prazo: int = 7, dias_parado: int = 30) -> str:
+    """O que pede atenção (só temas ativos), em JSON: vencido, prazo_perto (até dias_prazo), parado (sem mudança há
+    mais de dias_parado), sem_passo e a entrada pendente. Hoje = São Paulo."""
+    hoje = _agora().date()
+    mud = _mudancas()
+    r: dict = {"hoje": hoje.isoformat(), "vencido": [], "prazo_perto": [], "parado": [], "sem_passo": []}
+    for f in _arquivos_de_tema():
+        rel = f.relative_to(RAIZ).as_posix()
+        fm = _frontmatter(f.read_text(encoding="utf-8"))
+        if fm.get("estado", "ativo") not in ("", "ativo"):
+            continue
+        partes = rel.split("/")
+        item = {"caminho": rel, "tema": fm.get("tema", "?"),
+                "area": fm.get("area") or (partes[1] if len(partes) > 2 and partes[1] in AREAS else ""),
+                "empresa": fm.get("empresa", ""), "prazo": fm.get("prazo", ""),
+                "proximo_passo": fm.get("proximo_passo", ""), "mudanca": mud.get(rel, "")}
+        try:
+            prazo = dt.date.fromisoformat(item["prazo"])
+        except ValueError:
+            prazo = None
+        if prazo:
+            d = (prazo - hoje).days
+            if d < 0:
+                r["vencido"].append({**item, "dias": d})
+            elif d <= dias_prazo:
+                r["prazo_perto"].append({**item, "dias": d})
+        try:
+            parado = (hoje - dt.date.fromisoformat(item["mudanca"])).days
+        except ValueError:
+            parado = 0
+        if parado > dias_parado:
+            r["parado"].append({**item, "dias": parado})
+        if not item["proximo_passo"].strip():
+            r["sem_passo"].append({**item, "dias": parado})
+    for k in ("vencido", "prazo_perto"):
+        r[k].sort(key=lambda x: x["prazo"])
+    r["parado"].sort(key=lambda x: -x["dias"])
+    _, linhas, itens = _itens_entrada()
+    datas = [mo.group(0) for i in itens if (mo := re.search(r"\d{4}-\d{2}-\d{2}", linhas[i]))]
+    r["entrada"] = {"pendentes": len(itens), "mais_antiga": min(datas) if datas else None}
+    return json.dumps(r, ensure_ascii=False)
+
+
 # ---------- servidor MCP ----------
 
 def servidor():
@@ -480,7 +546,7 @@ def servidor():
         return w
 
     for f in (inicio, ler, buscar, listar_temas, criar_tema, mover_tema, anotar, acrescentar, substituir, reescrever_hot,
-              gravar, entrada_guardar, entrada_ler, entrada_processar):
+              gravar, entrada_guardar, entrada_ler, entrada_processar, temas_atencao):
         srv.tool()(embrulhar(f))
     return srv
 

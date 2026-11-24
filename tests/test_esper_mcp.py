@@ -135,7 +135,7 @@ def test_buscar_acha_singular_e_plural_e_varias_palavras(cerebro):
     (dict(area="trabalho", empresa="ness", marca="forense.io", cliente="Zacarelli"), "projetos/trabalho/ness"),
     (dict(area="trabalho", empresa="ionic", frente="produto"), "projetos/trabalho/ionic/produto"),
     (dict(area="trabalho", empresa="bekaa"), "projetos/trabalho/bekaa"),
-    (dict(area="trabalho", empresa="pf"), "projetos/trabalho/pf"),
+    (dict(area="trabalho", empresa="ness", marca="secops"), "projetos/trabalho/ness"),
     (dict(area="patrimonio", holding="fakiha"), "projetos/patrimonio/fakiha"),
     (dict(area="patrimonio"), "projetos/patrimonio"),
 ])
@@ -144,7 +144,7 @@ def test_pasta_do_tema(kw, pasta):
 
 
 @pytest.mark.parametrize("kw", [
-    dict(area=""), dict(area="trabalhos"), dict(area="trabalho", empresa="secops"),
+    dict(area=""), dict(area="trabalhos"), dict(area="trabalho", empresa="secops"), dict(area="trabalho", empresa="pf"),
     dict(area="trabalho", empresa="ionic"),                       # IONIC exige frente
     dict(area="trabalho", empresa="ness", frente="produto"),       # frente só na IONIC
     dict(area="trabalho", empresa="bekaa", marca="trustness"),     # marca só da ness
@@ -288,3 +288,64 @@ def test_revisao_final(cerebro):
     m.entrada_guardar("pedaço secreto")
     log = subprocess.run(["git", "-C", str(cerebro), "log", "-1", "--format=%s"], capture_output=True, text=True).stdout
     assert "secreto" not in log
+
+
+import datetime as dt, json, os
+
+
+def _commit(r, msg, data):
+    env = {**os.environ, "GIT_COMMITTER_DATE": f"{data}T12:00:00-03:00", "GIT_AUTHOR_DATE": f"{data}T12:00:00-03:00"}
+    subprocess.run(["git", "-C", str(r), "add", "-A"], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(r), "commit", "-qm", msg], check=True, capture_output=True, env=env)
+
+
+def test_empresas_sem_pf_e_secops():
+    assert m.EMPRESAS == {"ness": "CEO", "ionic": "CISO e acionista", "bekaa": "titular"}
+    assert m.MARCAS == {"ness": ("forense.io", "trustness", "secops")}
+
+
+def test_mudancas_usa_datas_do_git(cerebro):
+    m.criar_tema("a", "A", area="casa"); _commit(cerebro, "a", "2026-01-10")
+    m.criar_tema("b", "B", area="casa"); _commit(cerebro, "b", "2026-02-20")
+    m.substituir("projetos/casa/a.md", 'proximo_passo: ""', 'proximo_passo: "x"'); _commit(cerebro, "a2", "2026-03-05")
+    m.criar_tema("novo", "Novo", area="casa")  # sem commit
+    r = m._mudancas()
+    assert r["projetos/casa/a.md"] == "2026-03-05" and r["projetos/casa/b.md"] == "2026-02-20"
+    assert r["projetos/casa/novo.md"] == dt.date.today().isoformat() or len(r["projetos/casa/novo.md"]) == 10
+    assert "2026-03-05" in m.listar_temas(area="casa")
+
+
+def test_mudancas_sem_git_cai_no_mtime(cerebro, monkeypatch):
+    m.criar_tema("a", "A", area="casa")
+    shutil.rmtree(cerebro / ".git")
+    assert len(m._mudancas()["projetos/casa/a.md"]) == 10
+
+
+def test_temas_atencao(cerebro, monkeypatch):
+    monkeypatch.setattr(m, "_agora", lambda: dt.datetime(2026, 11, 24, 9, 0, tzinfo=m.FUSO))
+    def novo(slug, passo="faz", prazo="", estado=None):
+        m.criar_tema(slug, slug.upper(), area="casa", )
+        c = f"projetos/casa/{slug}.md"
+        m.substituir(c, 'proximo_passo: ""', f'proximo_passo: "{passo}"')
+        if prazo:
+            m.substituir(c, "prazo: ", f"prazo: {prazo}")
+        if estado:
+            m.substituir(c, "estado: ativo", f"estado: {estado}")
+    novo("venc", prazo="2026-11-20"); novo("perto", prazo="2026-11-27"); novo("longe", prazo="2026-12-30")
+    novo("ruim", prazo="amanha"); novo("conc", prazo="2026-11-01", estado="concluído"); novo("vazio", passo="")
+    _commit(cerebro, "temas", "2026-11-23")
+    novo("velho"); _commit(cerebro, "velho", "2026-09-01")
+    (cerebro / "entrada.md").write_text("# Entrada\n\n- 2026-11-10 09:00 · a\n- 2026-11-12 10:00 · b\n", encoding="utf-8")
+    r = json.loads(m.temas_atencao())
+    assert r["hoje"] == "2026-11-24"
+    assert [x["tema"] for x in r["vencido"]] == ["VENC"] and r["vencido"][0]["dias"] == -4
+    assert [x["tema"] for x in r["prazo_perto"]] == ["PERTO"] and r["prazo_perto"][0]["dias"] == 3
+    assert [x["tema"] for x in r["parado"]] == ["VELHO"] and r["parado"][0]["dias"] == 84
+    assert [x["tema"] for x in r["sem_passo"]] == ["VAZIO"]
+    assert r["entrada"] == {"pendentes": 2, "mais_antiga": "2026-11-10"}
+    assert set(r["vencido"][0]) == {"caminho", "tema", "area", "empresa", "prazo", "proximo_passo", "mudanca", "dias"}
+    assert json.loads(m.temas_atencao(dias_prazo=60))["prazo_perto"][-1]["tema"] == "LONGE"
+
+
+def test_temas_atencao_entrada_vazia(cerebro):
+    assert json.loads(m.temas_atencao())["entrada"] == {"pendentes": 0, "mais_antiga": None}

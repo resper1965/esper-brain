@@ -10,7 +10,7 @@ TIRAR = {
     "familia_registrar_pet", "familia_propor_documento",
 }  # ficam no gabi_brain: familia_vencimentos e atividade_* (Linear)
 ESPER = ["inicio", "ler", "buscar", "listar_temas", "criar_tema", "anotar", "acrescentar", "substituir", "reescrever_hot", "gravar",
-         "mover_tema", "entrada_guardar", "entrada_ler", "entrada_processar"]
+         "mover_tema", "entrada_guardar", "entrada_ler", "entrada_processar", "temas_atencao"]
 
 def bloco_do(linhas, nome):
     ini = [i for i, l in enumerate(linhas) if re.match(rf"^\s*{nome}:\s*$", l)]
