@@ -10,7 +10,7 @@
 | `pessoal/casa/` | pets, bens, casa, Home Assistant |
 | `empresas/<nome>.md` | uma ficha cadastral por empresa (sócios, quem assina, contrato social no Paperless); assuntos de trabalho ficam em `projetos/trabalho/<empresa>/` até a empresa ter cérebro próprio |
 | `pessoal/cofre/` | números de documento, CNPJ/IE/IM — **cifrado** (git-crypt); sem a chave aparece binário |
-| `projetos/<área>/` | temas por área: `familia/`, `trabalho/` (`ness/`, `ionic/<frente>/`, `bekaa/`, `pf/`), `patrimonio/` (`baalbeck/`, `fakiha/`), `saude/`, `casa/`, `pessoal/`; formato em `projetos/_modelo.md` |
+| `projetos/<área>/` | temas por área: `familia/`, `trabalho/` (`ness/`, `ionic/<frente>/`, `bekaa/`, inclui freelancer), `patrimonio/` (`baalbeck/`, `fakiha/`), `saude/`, `casa/`, `pessoal/`; formato em `projetos/_modelo.md` |
 | `entrada.md` | caixa de entrada: pedaços soltos com palpite, até a consolidação (skill `organizar`, 21:30) |
 | `diario/AAAA/MM-DD.md` | nota do dia |
 | `skills/` | instruções portáveis: `capturar`, `organizar`, `pensar-junto`, `retomar`, `salvar-sessao`, `digestao` (diária, 06:30) |

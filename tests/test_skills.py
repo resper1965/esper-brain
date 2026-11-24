@@ -4,7 +4,8 @@ sys.path.insert(0, str(RAIZ / "tools"))
 import esper_mcp as m
 
 FERRAMENTAS = {"inicio", "ler", "buscar", "listar_temas", "criar_tema", "mover_tema", "anotar", "acrescentar",
-               "substituir", "reescrever_hot", "gravar", "entrada_guardar", "entrada_ler", "entrada_processar"}
+               "substituir", "reescrever_hot", "gravar", "entrada_guardar", "entrada_ler", "entrada_processar",
+               "temas_atencao"}
 
 
 def test_ferramentas_existem_no_mcp():

@@ -9,6 +9,6 @@
    Link de documento para o Ricardo: `https://srv-hermes.tail985643.ts.net:8444/documents/N/details` (Paperless pela Tailscale). Nunca mande `127.0.0.1:8000`: é o endereço interno, só para as ferramentas.
 7. Antes de commitar: `git pull --rebase`. Mensagem de commit diz o que mudou e de onde veio.
 8. Clientes sob NDA (pentest, perícia): guarde contexto, pessoas e prazos; nunca achados, evidências ou credenciais.
-9. Empresas: em `empresas/<nome>.md` só a ficha cadastral. Assuntos de trabalho vivem em `projetos/trabalho/<empresa>/` (ness, ionic, bekaa, pf) até a empresa ter cérebro próprio; aí migram para lá. Sócios só do contrato social.
+9. Empresas: em `empresas/<nome>.md` só a ficha cadastral. Assuntos de trabalho vivem em `projetos/trabalho/<empresa>/` (ness, ionic, bekaa; freelancer é Bekaa, com o contratante em `cliente`) até a empresa ter cérebro próprio; aí migram para lá. Sócios só do contrato social.
 10. Só escreva em `pessoal/cofre/` num clone com `git-crypt unlock` feito; antes do commit confira que todo arquivo do cofre está cifrado (ver `docs/migracao.md`, passo 3). Um hook `pre-commit` (em `tools/hooks/`, instale com `tools/hooks/instalar-hooks.sh`) barra o commit se algum arquivo do cofre não estiver cifrado no índice.
 11. Grave sempre com `tools/gravar.sh "mensagem" arquivos...` (no Hermes: ferramenta `gravar` do MCP `esper_brain`, que chama o script) (trava, `pull --rebase`, confere o cofre, commit e push). Só a saída `gravado:` autoriza dizer "anotado". Nunca `push --force`, `reset --hard` nem apagar arquivo sem o Ricardo pedir.

@@ -1,10 +1,10 @@
 ---
 tema: "Nome do tema"
 area: ""                 # familia | trabalho | patrimonio | saude | casa | pessoal
-empresa: ""              # trabalho: ness | ionic | bekaa | pf
-marca: ""                # ness: trustness | forense.io
+empresa: ""              # trabalho: ness | ionic | bekaa (freelancer = bekaa + cliente)
+marca: ""                # ness: forense.io | trustness | secops
 cliente: ""              # trabalho: nome do cliente
-papel: ""                # pela empresa: ness CEO · ionic CISO e acionista · bekaa titular · pf freelancer
+papel: ""                # pela empresa: ness CEO · ionic CISO e acionista · bekaa titular
 frente: ""               # ionic: governanca | produto | operacao | pessoas | acionista
 holding: ""              # patrimonio: baalbeck | fakiha
 estado: ativo            # ativo | parado | concluído
