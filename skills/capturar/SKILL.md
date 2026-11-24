@@ -12,8 +12,8 @@ Ferramentas do MCP `esper_brain`. Se ainda não leu nesta conversa, chame `inici
 - Sem tema que sirva: `<Área> › novo: <nome curto>`. Sem área clara: `?`.
 
 ## 2. Guardar
-- `entrada_guardar(texto, palpite)` com o texto **como ele disse** (áudio: a transcrição; print: o texto lido + ` (do print)`).
-- A resposta começa com `gravado:` → responda **uma linha**: `guardei · <palpite>`.
+- `entrada_guardar(texto, palpite)` com o texto **como ele disse** (sem acrescentar contexto; o palpite já diz o tema) (áudio: a transcrição; print: o texto lido + ` (do print)`).
+- A resposta começa com `gravado:` → responda **só uma linha**: `guardei · <palpite>` (mais, no máximo, uma pergunta da seção 3 ou o "quer pensar junto?"). Nada de comentário, resumo do que sabe ou pergunta de aprofundamento: isso é da `pensar-junto`, só se ele aceitar. Pergunta que ele não respondeu não se repete.
 - Qualquer outra → `não guardei: <motivo>`.
 - Se o pedaço tem número de documento, senha/credencial ou achado de cliente sob NDA, não vai para a entrada: guarde o pedaço com essa parte trocada por `[omitido]` e diga na linha o que ficou de fora (`guardei · <palpite> · omiti o CPF`). Números vão para o cofre à mão, pelo Ricardo.
 
