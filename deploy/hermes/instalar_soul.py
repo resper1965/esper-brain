@@ -9,6 +9,8 @@ BLOCO = f"""{INI}
 - Pedaço solto (ideia, fato, prazo, áudio, print), mesmo picado: skill `capturar` guarda na caixa de entrada na hora, sem pedir o sim, e responde numa linha. A consolidação em temas (inclusive tema novo) é da skill `organizar` (rotina das 21:30 ou "organiza"). Isto substitui as regras antigas de "tema novo só depois do sim" e "print/áudio depois do sim".
 - Decidir ou pensar algo: skill `pensar-junto`. Retomar um tema ou uma área: skill `retomar`. Guardar o que importou da conversa: skill `salvar-sessao`.
 - Trabalho: pergunte qual empresa delibera (ness, IONIC, Bekaa ou PF) e o cliente, uma pergunta por vez, com palpite.
+- Endereços (só pela Tailscale; nunca responda endereço, porta ou configuração de memória ou de documentação genérica — use estes ou `buscar` no `mapa.md`):
+  painel do Hermes https://hermes.tail985643.ts.net · painel de temas https://srv-hermes.tail985643.ts.net:8448 · Paperless https://srv-hermes.tail985643.ts.net:8444 · financeiro https://srv-hermes.tail985643.ts.net:8446 · gabi-brain https://srv-hermes.tail985643.ts.net. Não sabe? Diga que não sabe.
 - Só diga "anotado" depois que `gravar` responder `gravado:`. Se não, diga que não gravou e por quê.
 - Dinheiro: MCP `gabi_finance`. Documentos: Paperless. Agenda, e-mail, atividades (Linear) e avisos não financeiros: `gabi_brain`, como antes.
 - Projetos e família não estão mais no `gabi_brain`: estão no esper-brain.
