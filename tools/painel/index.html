@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="no-referrer">
+<title>Temas</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --fundo:linear-gradient(135deg,#0c66e4 0%,#5e4db2 100%);
+  --topo:rgba(0,0,0,.22);--topo-hover:rgba(255,255,255,.2);
+  --lista:#f1f2f4;--cartao:#fff;--texto:#172b4d;--suave:#44546f;--fraco:#626f86;
+  --sombra:0 1px 1px #091e4240,0 0 1px #091e424f;--sombra-alta:0 8px 16px -4px #091e4240,0 0 1px #091e424f;
+  --hover:#091e420f;--hover2:#091e4224;--borda:#091e4224;--campo:#fff;
+  --foco:#388bff;--primario:#0c66e4;--primario-h:#0055cc;--ph:#091e4214;
+  --e-parado:#fea362;--e-concluido:#4bce97;--e-marca:#9f8fef;--e-frente:#579dff;--e-holding:#94c748;--e-cliente:#6cc3e0;--e-outro:#dcdfe4;--etq-texto:#172b4d;
+  --vencido:#c9372c;--vencido-t:#fff;--perto:#f5cd47;--perto-t:#533f04;
+  --modal:#f1f2f4;--veu:rgba(9,30,66,.54);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --fundo:linear-gradient(135deg,#09326c 0%,#352c63 100%);
+  --topo:rgba(0,0,0,.35);--topo-hover:rgba(255,255,255,.14);
+  --lista:#101204;--cartao:#22272b;--texto:#b6c2cf;--suave:#9fadbc;--fraco:#8c9bab;
+  --sombra:0 1px 1px #03040480,0 0 1px #03040480;--sombra-alta:0 8px 12px #0304045c,0 0 1px #03040480;
+  --hover:#a1bdd914;--hover2:#a6c5e229;--borda:#a6c5e229;--campo:#22272b;
+  --foco:#85b8ff;--primario:#579dff;--primario-h:#85b8ff;--ph:#a1bdd914;
+  --e-parado:#7f5f01;--e-concluido:#216e4e;--e-marca:#5e4db2;--e-frente:#0055cc;--e-holding:#4c6b1f;--e-cliente:#206a83;--e-outro:#454f59;--etq-texto:#dee4ea;
+  --vencido:#ae2e24;--vencido-t:#ffeceb;--perto:#7f5f01;--perto-t:#fff7d6;
+  --modal:#282e33;--veu:rgba(3,4,4,.64);
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--fundo) fixed;color:var(--texto);font-size:14px;line-height:20px;display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--foco);outline-offset:2px}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.6}
+
+/* topo */
+.topo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:var(--topo);backdrop-filter:blur(6px);color:#fff}
+.topo h1{margin:0 8px 0 2px;font-size:18px;font-weight:700;letter-spacing:.2px}
+.busca{flex:1 1 200px;max-width:320px;position:relative}
+.busca input{width:100%;height:32px;border-radius:6px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.18);color:#fff;padding:0 10px 0 30px}
+.busca input::placeholder{color:rgba(255,255,255,.8)}
+.busca input:focus{background:var(--campo);color:var(--texto);outline:none;border-color:var(--foco)}
+.busca::before{content:"";position:absolute;left:10px;top:9px;width:9px;height:9px;border:2px solid rgba(255,255,255,.9);border-radius:50%;pointer-events:none}
+.busca::after{content:"";position:absolute;left:20px;top:19px;width:6px;height:2px;background:rgba(255,255,255,.9);transform:rotate(45deg);pointer-events:none}
+.busca:focus-within::before{border-color:var(--suave)}.busca:focus-within::after{background:var(--suave)}
+.botao-topo{height:32px;padding:0 12px;border:0;border-radius:6px;background:rgba(255,255,255,.2);color:#fff;font-weight:600;white-space:nowrap;transition:background .15s}
+.botao-topo:hover{background:rgba(255,255,255,.3)}
+.botao-topo[aria-pressed="true"]{background:#fff;color:#172b4d}
+.contador{height:32px;display:inline-flex;align-items:center;padding:0 12px;border-radius:6px;background:rgba(255,255,255,.14);font-weight:600;white-space:nowrap}
+.contador.tem{background:var(--perto);color:var(--perto-t)}
+.espaco{flex:1}
+
+/* quadro */
+.quadro{flex:1;display:flex;align-items:flex-start;gap:12px;padding:12px 14px 16px;overflow-x:auto;overflow-y:hidden;scrollbar-color:rgba(255,255,255,.5) transparent}
+.lista{flex:0 0 272px;width:272px;max-height:100%;display:flex;flex-direction:column;background:var(--lista);border-radius:12px;box-shadow:var(--sombra);transition:box-shadow .15s}
+.lista.alvo{outline:2px solid var(--foco);outline-offset:0}
+.cab{display:flex;align-items:center;gap:8px;padding:10px 12px 6px 14px}
+.cab h2{margin:0;font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conta{min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:var(--hover2);color:var(--suave);font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center}
+.cartoes{flex:1 1 auto;min-height:8px;overflow-y:auto;padding:2px 8px 2px;display:flex;flex-direction:column;gap:8px;scrollbar-width:thin}
+.vazio{margin:2px 6px 4px;color:var(--fraco);font-size:13px}
+.cartoes:has(.placeholder) .vazio{display:none}
+.cartao{position:relative;background:var(--cartao);border-radius:8px;box-shadow:var(--sombra);padding:8px 12px 8px;cursor:pointer;outline-offset:0;transition:box-shadow .12s,opacity .2s,transform .12s;user-select:none}
+.cartao:hover{outline:2px solid var(--foco)}
+.cartao:active{cursor:grabbing}
+.cartao.arrastando{display:none}
+.cartao.enviando{opacity:.45;pointer-events:none}
+.cartao.concluido .titulo{color:var(--fraco);text-decoration:line-through}
+.titulo{margin:0;font-size:14px;font-weight:500;line-height:20px;overflow-wrap:anywhere}
+.passo{margin:4px 0 0;color:var(--suave);font-size:12.5px;line-height:17px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.etiquetas{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.etq{display:inline-block;max-width:100%;height:18px;line-height:18px;padding:0 8px;border-radius:4px;font-size:11.5px;font-weight:600;color:var(--etq-texto);background:var(--e-outro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.etq.estado-parado{background:var(--e-parado)}.etq.estado-concluido{background:var(--e-concluido)}
+.etq.marca{background:var(--e-marca)}.etq.frente{background:var(--e-frente)}.etq.holding{background:var(--e-holding)}.etq.cliente{background:var(--e-cliente)}
+.rodape{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 6px;border-radius:4px;font-size:12px;color:var(--suave);white-space:nowrap}
+.chip.prazo::before{content:"";width:9px;height:9px;border:1.5px solid currentColor;border-radius:50%;background:linear-gradient(currentColor,currentColor) 50% 1px/1.5px 4px no-repeat}
+.chip.prazo.vencido{background:var(--vencido);color:var(--vencido-t);font-weight:600}
+.chip.prazo.perto{background:var(--perto);color:var(--perto-t);font-weight:600}
+.chip.prazo.invalido{background:var(--hover2)}
+.chip.parado-ha{background:var(--hover);font-style:italic}
+.placeholder{flex:0 0 auto;border-radius:8px;background:var(--ph);box-shadow:inset 0 0 0 2px var(--hover2);min-height:36px}
+.pe{padding:6px 8px 8px}
+.add{width:100%;text-align:left;border:0;background:transparent;color:var(--suave);padding:6px 8px;border-radius:8px;font-weight:500;transition:background .12s,color .12s}
+.add:hover{background:var(--hover2);color:var(--texto)}
+.composer{display:flex;flex-direction:column;gap:8px}
+.composer textarea{resize:none;border:0;border-radius:8px;padding:8px 12px;background:var(--cartao);box-shadow:var(--sombra);min-height:56px}
+.composer textarea:focus{outline:2px solid var(--foco);outline-offset:0}
+.linha{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.primario{border:0;border-radius:4px;background:var(--primario);color:#fff;font-weight:600;padding:6px 12px;transition:background .12s}
+@media (prefers-color-scheme:dark){.primario{color:#1d2125}}
+.primario:hover{background:var(--primario-h)}
+.fantasma{border:0;border-radius:4px;background:transparent;color:var(--suave);padding:6px 10px;font-weight:500}
+.fantasma:hover{background:var(--hover2);color:var(--texto)}
+.carregando{color:#fff;padding:16px;font-weight:600}
+
+/* campos */
+.campo{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--suave)}
+.campo input,.campo select,.campo textarea{font-size:14px;font-weight:400;color:var(--texto);background:var(--campo);border:1px solid var(--borda);border-radius:4px;padding:6px 8px;min-height:34px;width:100%}
+.campo input:focus,.campo select:focus,.campo textarea:focus{outline:none;border-color:var(--foco);outline:1px solid var(--foco);outline-offset:-2px}
+.aviso{font-size:12px;font-weight:400;color:var(--vencido)}
+
+/* modal */
+dialog{border:0;padding:0;color:var(--texto);background:var(--modal);border-radius:12px;box-shadow:var(--sombra-alta)}
+dialog::backdrop{background:var(--veu)}
+#dlg-cartao{width:min(768px,calc(100vw - 32px));max-height:calc(100vh - 64px);overflow:auto}
+#dlg-cartao[open]{animation:entra .16s ease-out}
+@keyframes entra{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
+.m-cab{position:sticky;top:0;z-index:1;display:flex;align-items:flex-start;gap:12px;padding:16px 16px 12px 24px;background:var(--modal);border-bottom:1px solid var(--borda)}
+.m-cab h2{margin:0;font-size:20px;line-height:26px;font-weight:600;overflow-wrap:anywhere}
+.m-sub{margin:4px 0 0;font-size:12px;color:var(--fraco);overflow-wrap:anywhere}
+.m-sub b{color:var(--suave);font-weight:600}
+.m-cab .etiquetas{margin:8px 0 0}
+.m-corpo{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:20px;padding:16px 24px 24px}
+.m-corpo h3.sec{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave)}
+.md{background:var(--cartao);border-radius:8px;box-shadow:var(--sombra);padding:4px 16px 12px;overflow-wrap:anywhere;font-size:14px;line-height:21px}
+.md h3{font-size:16px;margin:16px 0 6px}.md h4{font-size:14px;margin:14px 0 4px;color:var(--suave)}.md h5,.md h6{font-size:13px;margin:12px 0 4px}
+.md p{margin:6px 0}.md ul{margin:4px 0;padding-left:20px}.md li{margin:2px 0}
+.md code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:var(--hover2);border-radius:3px;padding:0 3px}
+.md pre{background:var(--hover);border-radius:6px;padding:8px;overflow:auto}.md pre code{background:none;padding:0}
+.md .nada{color:var(--fraco);font-style:italic}
+.lateral{display:flex;flex-direction:column;gap:18px}
+.lateral form{display:flex;flex-direction:column;gap:8px}
+.lateral .primario{align-self:flex-start}
+.fechar{margin-left:auto;flex:0 0 auto}
+#dlg-frente{width:min(340px,calc(100vw - 32px))}
+#dlg-frente form{display:flex;flex-direction:column;gap:12px;padding:18px 20px}
+#dlg-frente h2{margin:0;font-size:16px}
+#dlg-frente p{margin:0;color:var(--suave)}
+#dlg-frente .linha{justify-content:flex-end}
+
+/* toasts */
+#toasts{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:10;pointer-events:none;width:max-content;max-width:calc(100vw - 32px)}
+.toast{background:#172b4d;color:#fff;padding:10px 16px;border-radius:8px;box-shadow:var(--sombra-alta);font-weight:500;animation:sobe .2s ease-out;transition:opacity .3s,transform .3s;pointer-events:auto}
+@media (prefers-color-scheme:dark){.toast{background:#dee4ea;color:#1d2125}}
+.toast.erro{background:var(--vencido);color:var(--vencido-t)}
+.toast.saindo{opacity:0;transform:translateY(6px)}
+@keyframes sobe{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.so-leitor{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* celular */
+@media (max-width:640px){
+  .topo{padding:8px 10px;gap:6px}
+  .topo h1{font-size:16px}
+  .busca{order:9;flex-basis:100%;max-width:none}
+  .quadro{scroll-snap-type:x mandatory;padding:10px;gap:10px;scroll-padding:10px}
+  .lista{flex-basis:86vw;width:86vw;scroll-snap-align:start}
+  #dlg-cartao{width:100vw;max-width:100vw;height:100%;max-height:100%;margin:0;border-radius:0}
+  .m-cab{padding:12px 12px 10px 16px}
+  .m-corpo{grid-template-columns:1fr;padding:12px 16px 24px}
+  .lateral{order:-1}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="topo">
+  <h1>Temas</h1>
+  <div class="busca"><label class="so-leitor" for="busca">Buscar temas</label><input id="busca" type="search" placeholder="Buscar…" autocomplete="off"></div>
+  <button id="concluidos" class="botao-topo" type="button" aria-pressed="false">Mostrar concluídos</button>
+  <span class="espaco"></span>
+  <span id="entrada" class="contador" title="Itens esperando na entrada.md">Entrada: …</span>
+  <button id="recarregar" class="botao-topo" type="button">Recarregar</button>
+</header>
+<main id="quadro" class="quadro" aria-label="Quadro de temas"><p class="carregando">Carregando…</p></main>
+<dialog id="dlg-cartao" aria-labelledby="m-titulo"></dialog>
+<dialog id="dlg-frente" aria-labelledby="f-titulo">
+  <form method="dialog">
+    <h2 id="f-titulo">Frente da IONIC</h2>
+    <p id="f-texto"></p>
+    <label class="campo">Frente<select id="f-select"></select></label>
+    <div class="linha"><button class="fantasma" value="" type="submit">Cancelar</button><button class="primario" value="ok" type="submit">Confirmar</button></div>
+  </form>
+</dialog>
+<div id="toasts" aria-live="polite"></div>
+<script>
+"use strict";
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const PROP = new Set(["value"]);
+function el(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (PROP.has(k)) e[k] = v;
+    else e.setAttribute(k, v === true ? "" : String(v));
+  }
+  for (const k of kids.flat(Infinity)) if (k != null && k !== false) e.append(k); // strings viram texto: nunca HTML
+  return e;
+}
+
+const ESTADOS = ["ativo", "parado", "concluído"];
+const ROT_ESTADO = { "ativo": "Ativo", "parado": "Parado", "concluído": "Concluído" };
+const SECOES = ["Ideias soltas", "Fatos e decisões", "Perguntas em aberto", "Prazos"];
+const ROT_FRENTE = { governanca: "Governança", produto: "Produto", operacao: "Operação", pessoas: "Pessoas", acionista: "Acionista" };
+const TRABALHO = new Set(["ness", "ionic", "bekaa", "trabalho"]);
+const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+const S = { dados: null, busca: "", concluidos: false, arr: null, ph: null, aberto: null, reabrir: null };
+try { S.concluidos = localStorage.getItem("painel.concluidos") === "1"; } catch (e) { /* sem storage */ }
+
+const rotFrente = f => ROT_FRENTE[f] || f;
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const plural = (n, um, varios) => n === 1 ? um : varios;
+
+// ---------- API ----------
+function msgErro(st, j) {
+  const e = j && j.erro;
+  if (e === "proibido") return "Acesso negado.";
+  if (e === "origem") return "Pedido recusado pelo servidor (origem).";
+  if (e) return st === 502 ? "Não gravado: " + e : cap(String(e));
+  return "Erro " + st + " no servidor.";
+}
+async function api(url, corpo) {
+  const op = { credentials: "same-origin", cache: "no-store", headers: { "Accept": "application/json" } };
+  if (corpo !== undefined) {
+    op.method = "POST";
+    op.headers["Content-Type"] = "application/json";
+    op.body = JSON.stringify(corpo);
+  }
+  let r;
+  try { r = await fetch(url, op); } catch (e) { throw new Error("Sem conexão com o servidor."); }
+  let j = null;
+  try { j = await r.json(); } catch (e) { /* corpo não JSON */ }
+  if (!r.ok) throw new Error(msgErro(r.status, j));
+  if (!j) throw new Error("Resposta inválida do servidor.");
+  return j;
+}
+
+// ---------- toast ----------
+function toast(msg, tipo) {
+  const t = el("div", { class: "toast" + (tipo ? " " + tipo : ""), role: tipo === "erro" ? "alert" : "status" }, msg);
+  $("#toasts").append(t);
+  setTimeout(() => { t.classList.add("saindo"); setTimeout(() => t.remove(), 300); }, tipo === "erro" ? 6000 : 2800);
+}
+
+// ---------- datas ----------
+function data(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || "").trim());
+  if (!m) return null;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3] ? d : null;
+}
+const dias = (a, b) => Math.round((b - a) / 864e5);
+function fmtData(d) {
+  const hoje = data(S.dados && S.dados.hoje);
+  let s = d.getUTCDate() + " " + MESES[d.getUTCMonth()];
+  if (!hoje || d.getUTCFullYear() !== hoje.getUTCFullYear()) s += " " + d.getUTCFullYear();
+  return s;
+}
+function prazoChip(prazo) {
+  if (!prazo) return null;
+  const d = data(prazo), hoje = data(S.dados.hoje);
+  if (!d) return el("span", { class: "chip prazo invalido", title: "Prazo inválido: " + prazo }, "Prazo inválido");
+  const n = hoje ? dias(hoje, d) : 99;
+  let cls = "", dica;
+  if (n < 0) { cls = " vencido"; dica = `Vencido há ${-n} ${plural(-n, "dia", "dias")}`; }
+  else if (n === 0) { cls = " perto"; dica = "Vence hoje"; }
+  else if (n <= 7) { cls = " perto"; dica = `Vence em ${n} ${plural(n, "dia", "dias")}`; }
+  else dica = `Vence em ${n} dias`;
+  return el("span", { class: "chip prazo" + cls, title: dica }, el("span", { class: "so-leitor" }, "Prazo: "), fmtData(d), el("span", { class: "so-leitor" }, ". " + dica));
+}
+
+// ---------- cartões ----------
+function etiquetas(c) {
+  const l = [];
+  if (c.estado && c.estado !== "ativo") l.push([c.estado === "parado" ? "estado-parado" : c.estado === "concluído" ? "estado-concluido" : "", ROT_ESTADO[c.estado] || c.estado]);
+  if (c.marca) l.push(["marca", c.marca]);
+  if (c.frente) l.push(["frente", rotFrente(c.frente)]);
+  if (c.holding) l.push(["holding", cap(c.holding)]);
+  if (c.cliente) l.push(["cliente", c.cliente]);
+  return l.length ? el("div", { class: "etiquetas" }, l.map(([k, t]) => el("span", { class: "etq " + k, title: t }, t))) : null;
+}
+function cartaoEl(c, col) {
+  const e = el("article", {
+    class: "cartao" + (c.estado === "concluído" ? " concluido" : ""), tabindex: 0, draggable: "true",
+    role: "button", "aria-haspopup": "dialog", "data-caminho": c.caminho,
+  });
+  const rod = [prazoChip(c.prazo), c.parado_dias > 30 ? el("span", { class: "chip parado-ha" }, `Parado há ${c.parado_dias} dias`) : null].filter(Boolean);
+  e.append(...[etiquetas(c), el("h3", { class: "titulo" }, c.tema || c.caminho),
+    c.proximo_passo ? el("p", { class: "passo", title: c.proximo_passo }, c.proximo_passo) : null,
+    rod.length ? el("div", { class: "rodape" }, rod) : null].filter(Boolean));
+  e.addEventListener("click", () => abrir(c.caminho));
+  e.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); abrir(c.caminho); } });
+  e.addEventListener("dragstart", ev => iniciarArraste(ev, e, c, col));
+  e.addEventListener("dragend", fimArraste);
+  return e;
+}
+function visivel(c) {
+  if (!S.concluidos && c.estado === "concluído") return false;
+  if (!S.busca) return true;
+  return norm([c.tema, c.proximo_passo, c.cliente, c.marca, c.frente, rotFrente(c.frente), c.holding, c.estado, c.caminho].join(" ")).includes(S.busca);
+}
+function colunaEl(col) {
+  const vis = col.cartoes.filter(visivel);
+  const lista = el("section", { class: "lista", "data-coluna": col.id, "aria-label": col.rotulo });
+  const cont = el("div", { class: "cartoes" }, vis.map(c => cartaoEl(c, col)));
+  if (!vis.length) cont.append(el("p", { class: "vazio" }, S.busca ? "Nada encontrado." : "Sem cartões."));
+  const pe = el("div", { class: "pe" });
+  pe.append(botaoAdicionar(col, pe));
+  lista.append(el("header", { class: "cab" }, el("h2", { title: col.rotulo }, col.rotulo),
+    el("span", { class: "conta", title: vis.length + " " + plural(vis.length, "cartão", "cartões") }, String(vis.length))), cont, pe);
+  lista.addEventListener("dragover", ev => sobre(ev, lista));
+  lista.addEventListener("drop", ev => soltar(ev, col));
+  return lista;
+}
+function render() {
+  const q = $("#quadro");
+  if (!S.dados) return;
+  const x = q.scrollLeft, ys = {};
+  q.querySelectorAll(".lista").forEach(l => { ys[l.dataset.coluna] = l.querySelector(".cartoes").scrollTop; });
+  q.replaceChildren(...S.dados.colunas.map(colunaEl));
+  q.scrollLeft = x;
+  q.querySelectorAll(".lista").forEach(l => { if (ys[l.dataset.coluna]) l.querySelector(".cartoes").scrollTop = ys[l.dataset.coluna]; });
+  const ent = $("#entrada"), n = S.dados.entrada || 0;
+  ent.textContent = "Entrada: " + n;
+  ent.classList.toggle("tem", n > 0);
+  if (S.reabrir) {
+    const l = q.querySelector(`.lista[data-coluna="${CSS.escape(S.reabrir)}"]`);
+    const col = S.dados.colunas.find(c => c.id === S.reabrir);
+    S.reabrir = null;
+    if (l && col) abrirComposer(col, l.querySelector(".pe"));
+  }
+}
+async function carregar() {
+  const b = $("#recarregar");
+  b.disabled = true;
+  try {
+    S.dados = await api("/api/quadro");
+    if (!S.arr) render();
+  } catch (e) {
+    toast(e.message, "erro");
+    if (!S.dados) $("#quadro").replaceChildren(el("p", { class: "carregando" }, "Não deu para carregar o quadro. " + e.message));
+  } finally { b.disabled = false; }
+}
+function achar(caminho) {
+  for (const col of (S.dados ? S.dados.colunas : [])) {
+    const c = col.cartoes.find(k => k.caminho === caminho);
+    if (c) return { c, col };
+  }
+  return null;
+}
+
+// ---------- arrastar e soltar ----------
+function iniciarArraste(ev, e, c, col) {
+  S.arr = { c, col, e };
+  ev.dataTransfer.effectAllowed = "move";
+  ev.dataTransfer.setData("text/plain", c.tema || c.caminho);
+  S.ph = el("div", { class: "placeholder", "aria-hidden": "true" });
+  S.ph.style.height = e.offsetHeight + "px";
+  requestAnimationFrame(() => { if (S.arr && S.arr.e === e) { e.after(S.ph); e.classList.add("arrastando"); } });
+}
+function sobre(ev, lista) {
+  if (!S.arr) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = "move";
+  const cont = lista.querySelector(".cartoes");
+  const antes = [...cont.querySelectorAll(".cartao:not(.arrastando)")].find(k => {
+    const r = k.getBoundingClientRect();
+    return ev.clientY < r.top + r.height / 2;
+  });
+  if (antes) { if (S.ph.nextElementSibling !== antes) cont.insertBefore(S.ph, antes); }
+  else if (cont.lastElementChild !== S.ph) cont.append(S.ph);
+  document.querySelectorAll(".lista.alvo").forEach(l => { if (l !== lista) l.classList.remove("alvo"); });
+  lista.classList.add("alvo");
+}
+function fimArraste() {
+  document.querySelectorAll(".lista.alvo").forEach(l => l.classList.remove("alvo"));
+  if (S.ph) { S.ph.remove(); S.ph = null; }
+  if (S.arr) { S.arr.e.classList.remove("arrastando"); S.arr = null; }
+}
+async function soltar(ev, col) {
+  if (!S.arr) return;
+  ev.preventDefault();
+  const { c, col: de, e } = S.arr;
+  if (col.id === de.id || !S.ph) { fimArraste(); return; }
+  S.ph.replaceWith(e);
+  S.ph = null; S.arr = null;
+  e.classList.remove("arrastando");
+  e.classList.add("enviando");
+  document.querySelectorAll(".lista.alvo").forEach(l => l.classList.remove("alvo"));
+  await mover(c, col, null, () => { e.classList.remove("enviando"); render(); });
+}
+async function mover(c, col, frente, cancelado) {
+  const corpo = { caminho: c.caminho, coluna: col.id };
+  if (col.id === "ionic") {
+    if (!frente) frente = await escolherFrente(c.tema);
+    if (!frente) { if (cancelado) cancelado(); return null; }
+    corpo.frente = frente;
+  }
+  let r = null;
+  try {
+    r = await api("/api/mover", corpo);
+    toast(r.mudou ? `“${c.tema}” foi para ${col.rotulo}.` : "Nada mudou.");
+  } catch (e) { toast(e.message, "erro"); }
+  await carregar();
+  return r;
+}
+function selectFrente(id) {
+  return el("select", { id },
+    el("option", { value: "", disabled: true, selected: true }, "Escolha a frente…"),
+    (S.dados.frentes || []).map(f => el("option", { value: f }, rotFrente(f))));
+}
+function escolherFrente(tema) {
+  const dlg = $("#dlg-frente");
+  const sel = selectFrente("f-select");
+  $("#f-select").replaceWith(sel);
+  $("#f-texto").textContent = `Em qual frente da IONIC fica “${tema}”?`;
+  dlg.returnValue = "";
+  return new Promise(res => {
+    const fim = () => { dlg.removeEventListener("close", fim); res(dlg.returnValue === "ok" && sel.value ? sel.value : null); };
+    dlg.addEventListener("close", fim);
+    const ok = dlg.querySelector('button[value="ok"]');
+    ok.disabled = true;
+    sel.addEventListener("change", () => { ok.disabled = !sel.value; });
+    dlg.showModal();
+    sel.focus();
+  });
+}
+
+// ---------- novo cartão ----------
+function botaoAdicionar(col, pe) {
+  return el("button", { class: "add", type: "button", onclick: () => abrirComposer(col, pe) }, "+ Adicionar cartão");
+}
+function abrirComposer(col, pe) {
+  document.querySelectorAll(".composer").forEach(f => f._fechar && f._fechar());
+  const ta = el("textarea", { rows: 2, maxlength: 300, placeholder: "Título do tema…", "aria-label": "Título do novo cartão em " + col.rotulo });
+  const fr = col.id === "ionic" ? selectFrente("") : null;
+  const ok = el("button", { class: "primario", type: "submit" }, "Adicionar cartão");
+  const f = el("form", { class: "composer" }, ta, fr ? el("label", { class: "campo" }, "Frente", fr) : null,
+    el("div", { class: "linha" }, ok, el("button", { class: "fantasma", type: "button", onclick: () => fechar() }, "Cancelar")));
+  const fechar = () => { if (f.isConnected) pe.replaceChildren(botaoAdicionar(col, pe)); };
+  f._fechar = fechar;
+  async function criar() {
+    const tema = ta.value.replace(/\s+/g, " ").trim();
+    if (!tema) { ta.focus(); return; }
+    if (fr && !fr.value) { toast("Escolha a frente da IONIC.", "erro"); fr.focus(); return; }
+    const corpo = { coluna: col.id, tema };
+    if (fr) corpo.frente = fr.value;
+    ok.disabled = ta.disabled = true;
+    try {
+      await api("/api/criar", corpo);
+      toast(`Cartão “${tema}” criado.`);
+      S.reabrir = col.id;
+    } catch (e) {
+      toast(e.message, "erro");
+      ok.disabled = ta.disabled = false;
+      ta.focus();
+      return;
+    }
+    await carregar();
+  }
+  f.addEventListener("submit", ev => { ev.preventDefault(); criar(); });
+  ta.addEventListener("keydown", ev => {
+    if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); criar(); }
+    else if (ev.key === "Escape") { ev.preventDefault(); fechar(); }
+  });
+  pe.replaceChildren(f);
+  ta.focus();
+  f.scrollIntoView({ block: "nearest" });
+}
+
+// ---------- markdown simples (monta DOM; nada vira HTML) ----------
+function inline(alvo, s) {
+  for (const x of s.split(/(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`)/)) {
+    if (!x) continue;
+    if (/^(\*\*|__).+\1$/.test(x)) alvo.append(el("strong", null, x.slice(2, -2)));
+    else if (/^`.+`$/.test(x)) alvo.append(el("code", null, x.slice(1, -1)));
+    else alvo.append(x);
+  }
+  return alvo;
+}
+function markdown(txt, tema) {
+  const frag = document.createDocumentFragment();
+  let linhas = String(txt || "").replace(/\r\n?/g, "\n").split("\n");
+  if (linhas[0] === "---") { const f = linhas.indexOf("---", 1); if (f > 0) linhas = linhas.slice(f + 1); }
+  let ul = null, p = null, code = null, primeiro = true, m;
+  for (const l of linhas) {
+    if (/^\s*```/.test(l)) {
+      if (code) code = null;
+      else { code = el("code"); frag.append(el("pre", null, code)); ul = p = null; }
+      continue;
+    }
+    if (code) { code.append(l + "\n"); continue; }
+    if (/^\s*<!--.*-->\s*$/.test(l)) continue;
+    if ((m = /^(#{1,6})\s+(.*?)\s*#*\s*$/.exec(l))) {
+      ul = p = null;
+      if (primeiro && m[1].length === 1 && norm(m[2]) === norm(tema)) { primeiro = false; continue; }
+      frag.append(inline(el("h" + Math.min(6, m[1].length + 2)), m[2]));
+      primeiro = false;
+      continue;
+    }
+    if (!l.trim()) { ul = p = null; continue; }
+    primeiro = false;
+    if ((m = /^\s*[-*+]\s+(.*)$/.exec(l))) {
+      p = null;
+      if (!ul) { ul = el("ul"); frag.append(ul); }
+      ul.append(inline(el("li"), m[1]));
+      continue;
+    }
+    if (ul && /^\s{2,}\S/.test(l) && ul.lastChild) { ul.lastChild.append(" "); inline(ul.lastChild, l.trim()); continue; }
+    ul = null;
+    if (!p) { p = el("p"); frag.append(p); } else p.append(el("br"));
+    inline(p, l.trim());
+  }
+  if (!frag.childNodes.length) frag.append(el("p", { class: "nada" }, "Sem texto."));
+  return frag;
+}
+
+// ---------- detalhe do cartão ----------
+const dlg = $("#dlg-cartao");
+function abrir(caminho) {
+  const a = achar(caminho);
+  if (!a) return;
+  S.aberto = caminho;
+  montarModal(a.c, a.col);
+  if (!dlg.open) dlg.showModal();
+  $("#m-fechar").focus();
+  carregarTexto(caminho, a.c.tema);
+}
+async function carregarTexto(caminho, tema) {
+  const md = $("#m-md");
+  try {
+    const r = await api("/api/tema?caminho=" + encodeURIComponent(caminho));
+    if (S.aberto === caminho && md.isConnected) md.replaceChildren(markdown(r.texto, tema));
+  } catch (e) {
+    if (md.isConnected) md.replaceChildren(el("p", { class: "nada" }, "Não deu para ler o texto. " + e.message));
+  }
+}
+function opcoes(lista, atual) {
+  return lista.map(([v, t]) => el("option", { value: v, selected: v === atual }, t));
+}
+function montarModal(c, col) {
+  const foco = document.activeElement && dlg.contains(document.activeElement) ? document.activeElement.id : "";
+  const ehTrab = TRABALHO.has(col.id);
+  const dPrazo = data(c.prazo);
+
+  // campos
+  const est = el("select", { id: "m-estado" }, opcoes(ESTADOS.concat(ESTADOS.includes(c.estado) ? [] : [c.estado]).map(v => [v, ROT_ESTADO[v] || v]), c.estado));
+  const passo = el("input", { id: "m-passo", type: "text", maxlength: 300, value: c.proximo_passo || "", placeholder: "O que fazer agora?" });
+  const prazo = el("input", { id: "m-prazo", type: "date", value: dPrazo ? c.prazo.trim() : "" });
+  const cliente = ehTrab ? el("input", { id: "m-cliente", type: "text", maxlength: 300, value: c.cliente || "" }) : null;
+  const marca = col.id === "ness" ? el("select", { id: "m-marca" },
+    opcoes([["", "Sem marca"]].concat((S.dados.marcas || []).map(x => [x, x])).concat(c.marca && !(S.dados.marcas || []).includes(c.marca) ? [[c.marca, c.marca]] : []), c.marca || "")) : null;
+  const inicial = new Map([[est, est.value], [passo, passo.value], [prazo, prazo.value]]);
+  if (cliente) inicial.set(cliente, cliente.value);
+  if (marca) inicial.set(marca, marca.value);
+  const chave = { "m-estado": "estado", "m-passo": "proximo_passo", "m-prazo": "prazo", "m-cliente": "cliente", "m-marca": "marca" };
+  const salvar = el("button", { id: "m-salvar", class: "primario", type: "submit" }, "Salvar");
+  const fCampos = el("form", { "aria-label": "Campos" },
+    el("label", { class: "campo" }, "Estado", est),
+    el("label", { class: "campo" }, "Próximo passo", passo),
+    el("label", { class: "campo" }, "Prazo", prazo, c.prazo && !dPrazo ? el("span", { class: "aviso" }, "Prazo atual inválido: " + c.prazo) : null),
+    cliente ? el("label", { class: "campo" }, "Cliente", cliente) : null,
+    marca ? el("label", { class: "campo" }, "Marca", marca) : null,
+    salvar);
+  fCampos.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const corpo = { caminho: c.caminho };
+    for (const [campo, v0] of inicial) {
+      const v = campo.tagName === "INPUT" && campo.type === "text" ? campo.value.trim() : campo.value;
+      if (v !== v0.trim()) corpo[chave[campo.id]] = v;
+    }
+    if (Object.keys(corpo).length === 1) { toast("Nada mudou."); return; }
+    acao(salvar, "/api/campos", corpo, "Salvo.");
+  });
+
+  // anotar
+  const sec = el("select", { id: "m-secao" }, opcoes(SECOES.map(s => [s, s]), SECOES[0]));
+  const nota = el("input", { id: "m-nota", type: "text", maxlength: 300, placeholder: "Escreva a anotação…", required: true });
+  const anotar = el("button", { id: "m-anotar", class: "primario", type: "submit" }, "Anotar");
+  const fAnotar = el("form", { "aria-label": "Anotar" },
+    el("label", { class: "campo" }, "Seção", sec), el("label", { class: "campo" }, "Texto", nota), anotar);
+  fAnotar.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const texto = nota.value.trim();
+    if (!texto) { nota.focus(); return; }
+    if (await acao(anotar, "/api/anotar", { caminho: c.caminho, secao: sec.value, texto }, "Anotado.")) $("#m-nota").focus();
+  });
+
+  // mover
+  const dest = el("select", { id: "m-coluna" }, opcoes(S.dados.colunas.map(k => [k.id, k.rotulo]), col.id));
+  const fr = selectFrente("m-frente");
+  const frRot = el("label", { class: "campo", hidden: true }, "Frente", fr);
+  dest.addEventListener("change", () => { frRot.hidden = dest.value !== "ionic"; });
+  const btMover = el("button", { id: "m-mover", class: "primario", type: "submit" }, "Mover");
+  const fMover = el("form", { "aria-label": "Mover para" }, el("label", { class: "campo" }, "Coluna", dest), frRot, btMover);
+  fMover.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const alvo = S.dados.colunas.find(k => k.id === dest.value);
+    if (!alvo || alvo.id === col.id) { toast("Já está nessa coluna."); return; }
+    if (alvo.id === "ionic" && !fr.value) { toast("Escolha a frente da IONIC.", "erro"); fr.focus(); return; }
+    btMover.disabled = true;
+    const r = await mover(c, alvo, fr.value || null);
+    btMover.disabled = false;
+    if (r && dlg.open) reabrirModal(r.caminho);
+  });
+
+  const cab = el("div", { class: "m-cab" },
+    el("div", null, el("h2", { id: "m-titulo" }, c.tema || c.caminho),
+      el("p", { class: "m-sub" }, "na lista ", el("b", null, col.rotulo), " · " + c.caminho),
+      etiquetas(c)),
+    el("button", { id: "m-fechar", class: "fantasma fechar", type: "button", onclick: () => dlg.close() }, "Fechar"));
+  const corpo = el("div", { class: "m-corpo" },
+    el("section", { class: "principal", "aria-labelledby": "m-sec-texto" },
+      el("h3", { class: "sec", id: "m-sec-texto" }, "Texto"), el("div", { id: "m-md", class: "md" }, el("p", { class: "nada" }, "Carregando…"))),
+    el("aside", { class: "lateral" },
+      el("div", null, el("h3", { class: "sec" }, "Campos"), fCampos),
+      el("div", null, el("h3", { class: "sec" }, "Anotar"), fAnotar),
+      el("div", null, el("h3", { class: "sec" }, "Mover para…"), fMover)));
+  dlg.replaceChildren(cab, corpo);
+  if (foco && document.getElementById(foco)) document.getElementById(foco).focus();
+}
+async function acao(botao, url, corpo, ok) {
+  botao.disabled = true;
+  let r = null;
+  try { r = await api(url, corpo); toast(ok); }
+  catch (e) { toast(e.message, "erro"); }
+  botao.disabled = false;
+  await carregar();
+  if (r && dlg.open) reabrirModal(r.caminho || corpo.caminho);
+  return r;
+}
+function reabrirModal(caminho) {
+  const a = achar(caminho);
+  if (!a) { dlg.close(); return; }
+  S.aberto = caminho;
+  const y = dlg.scrollTop;
+  montarModal(a.c, a.col);
+  dlg.scrollTop = y;
+  carregarTexto(caminho, a.c.tema);
+}
+dlg.addEventListener("close", () => {
+  const cam = S.aberto;
+  S.aberto = null;
+  dlg.replaceChildren();
+  const k = cam && document.querySelector(`.cartao[data-caminho="${CSS.escape(cam)}"]`);
+  if (k) k.focus();
+});
+dlg.addEventListener("click", ev => { if (ev.target === dlg) dlg.close(); }); // clique no véu fecha
+
+// ---------- topo ----------
+const btConc = $("#concluidos");
+function syncConc() {
+  btConc.setAttribute("aria-pressed", String(S.concluidos));
+  btConc.textContent = S.concluidos ? "Esconder concluídos" : "Mostrar concluídos";
+}
+btConc.addEventListener("click", () => {
+  S.concluidos = !S.concluidos;
+  try { localStorage.setItem("painel.concluidos", S.concluidos ? "1" : "0"); } catch (e) { /* ok */ }
+  syncConc();
+  render();
+});
+let tBusca = 0;
+$("#busca").addEventListener("input", ev => {
+  clearTimeout(tBusca);
+  tBusca = setTimeout(() => { S.busca = norm(ev.target.value.trim()); render(); }, 120);
+});
+$("#busca").addEventListener("keydown", ev => { if (ev.key === "Escape" && ev.target.value) { ev.target.value = ""; S.busca = ""; render(); } });
+$("#recarregar").addEventListener("click", async () => { await carregar(); toast("Quadro atualizado."); });
+document.addEventListener("keydown", ev => {
+  if (ev.key === "/" && !dlg.open && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) { ev.preventDefault(); $("#busca").focus(); }
+});
+window.addEventListener("focus", () => { if (!dlg.open && !S.arr && !document.querySelector(".composer")) carregar(); });
+syncConc();
+carregar();
+})();
+</script>
+</body>
+</html>
