@@ -1,2 +1,4 @@
 mcp>=1.2,<2
 tzdata
+starlette
+uvicorn
