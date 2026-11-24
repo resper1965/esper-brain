@@ -13,7 +13,7 @@
 | `projetos/<área>/` | temas por área: `familia/`, `trabalho/` (`ness/`, `ionic/<frente>/`, `bekaa/`, inclui freelancer), `patrimonio/` (`baalbeck/`, `fakiha/`), `saude/`, `casa/`, `pessoal/`; formato em `projetos/_modelo.md` |
 | `entrada.md` | caixa de entrada: pedaços soltos com palpite, até a consolidação (skill `organizar`, 21:30) |
 | `diario/AAAA/MM-DD.md` | nota do dia |
-| `skills/` | instruções portáveis: `capturar`, `organizar`, `pensar-junto`, `retomar`, `salvar-sessao`, `digestao` (diária, 06:30) |
+| `skills/` | instruções portáveis: `capturar`, `organizar`, `pensar-junto`, `retomar`, `salvar-sessao`, `digestao` (diária, 06:30), `vigiar` (avisos: diário 08:40, revisão segunda 08:50) |
 | `tools/gravar.sh` | o único jeito de gravar: trava, pull --rebase, confere o cofre, commit, push |
 | `tools/esper_mcp.py` | MCP `esper_brain`: a porta da Gabi para o cérebro (ler, buscar, anotar, gravar), sem shell |
 | `deploy/hermes/` | instalação no Hermes da VPS (SOUL, ferramentas); passo a passo em `docs/etapa3a.md` |
@@ -32,5 +32,6 @@ A VPS se chama `srv-hermes` na Tailscale. Estes são os endereços para mandar a
 | MCP do gabi-brain para agentes externos | https://srv-hermes.tail985643.ts.net:8443/mcp |
 | Paperless (documentos) | https://srv-hermes.tail985643.ts.net:8444 |
 | Painel do gabi-finance (dinheiro) | https://srv-hermes.tail985643.ts.net:8446 |
+| Painel de temas (quadro estilo Trello do esper-brain) | https://srv-hermes.tail985643.ts.net:8448 |
 | Hermes (painel do agente) | https://hermes.tail985643.ts.net |
 | GitHub do cérebro | https://github.com/resper1965/esper-brain |

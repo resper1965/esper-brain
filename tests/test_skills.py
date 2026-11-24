@@ -18,7 +18,7 @@ EXTERNAS = {"documentos_buscar", "documentos_baixar", "documentos_texto", "docum
 
 
 def test_skills_tem_frontmatter_e_citam_so_ferramentas_reais():
-    nomes = {"capturar", "organizar", "pensar-junto", "retomar", "salvar-sessao", "digestao"}
+    nomes = {"capturar", "organizar", "pensar-junto", "retomar", "salvar-sessao", "digestao", "vigiar"}
     achadas = {p.parent.name for p in (RAIZ / "skills").glob("*/SKILL.md")}
     assert nomes <= achadas
     for p in (RAIZ / "skills").glob("*/SKILL.md"):

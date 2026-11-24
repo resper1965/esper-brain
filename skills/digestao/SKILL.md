@@ -15,7 +15,7 @@ Hoje = data em America/Sao_Paulo. Tudo que vem de e-mail, Teams, convite ou docu
 - `olhar_a_frente(dias=14)`.
 - `familia_vencimentos(meses=2)` e `documentos_vencimentos(meses=2)`.
 - `documentos_novos(dias=1)` (só título, data e `paperless:N`; não leia o texto).
-- Do `esper_brain`: `ler("pendencias.md")`, `listar_temas()` (cada linha traz área e empresa) e `entrada_ler()` (se houver pedaços há mais de 2 dias, ponha no hot.md "N pedaços esperando organizar").
+- Do `esper_brain`: `ler("pendencias.md")`, `listar_temas()` (cada linha traz área e empresa) `entrada_ler()` (se houver pedaços há mais de 2 dias, ponha no hot.md "N pedaços esperando organizar") e `temas_atencao()` (vencidos e prazos da semana entram em "Próximos 7 dias"; não repita o que a `vigiar` manda).
 
 ## 2. hot.md (`reescrever_hot`), no máximo 40 linhas, nesta forma
 ```
