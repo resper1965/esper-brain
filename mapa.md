@@ -20,5 +20,17 @@
 
 ## Ferramentas fora do markdown
 - **Dinheiro:** MCP `gabi-finance`. `gabi-finance projeto:N` = gastos/orçamento do projeto N.
-- **Documentos:** Paperless. `paperless:123` = documento 123 → `<PAPERLESS_URL>/documents/123/details`.
+- **Documentos:** Paperless. `paperless:123` = documento 123 → `https://srv-hermes.tail985643.ts.net:8444/documents/123/details`.
 - `gabi-brain pessoa:x` / `gabi-brain projeto:N` = id de origem na migração (some depois da virada).
+
+## Endereços (só pela Tailscale)
+A VPS se chama `srv-hermes` na Tailscale. Estes são os endereços para mandar ao Ricardo; `127.0.0.1` e sockets são internos, nunca mande. Os nomes antigos `gabi.` e `gabi-brain.tail985643.ts.net` não funcionam mais.
+
+| O quê | Endereço |
+|---|---|
+| Painel do gabi-brain (agenda, e-mail, família, avisos) | https://srv-hermes.tail985643.ts.net |
+| MCP do gabi-brain para agentes externos | https://srv-hermes.tail985643.ts.net:8443/mcp |
+| Paperless (documentos) | https://srv-hermes.tail985643.ts.net:8444 |
+| Painel do gabi-finance (dinheiro) | https://srv-hermes.tail985643.ts.net:8446 |
+| Hermes (painel do agente) | https://hermes.tail985643.ts.net |
+| GitHub do cérebro | https://github.com/resper1965/esper-brain |
