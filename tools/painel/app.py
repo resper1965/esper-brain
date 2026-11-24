@@ -12,6 +12,7 @@ import datetime as dt
 import json
 import os
 import re
+import socket
 import sys
 import threading
 from pathlib import Path
@@ -73,7 +74,12 @@ def _destino(coluna) -> tuple[str, str]:
     raise Erro(f"coluna inválida: {c!r}")
 
 
-def _cartao(f: Path, mud: dict, hoje: dt.date) -> dict:
+def _titulo(f: Path, fm: dict) -> str:
+    return fm.get("tema") or (f.parent.name if f.name == "README.md" else f.stem)
+
+
+def _cartao_fm(f: Path, mud: dict, hoje: dt.date) -> tuple[dict, dict]:
+    """Cartão e frontmatter, lendo o arquivo uma vez."""
     rel = f.relative_to(esper_mcp.RAIZ).as_posix()
     fm = esper_mcp._frontmatter(f.read_text(encoding="utf-8"))
     mudanca = mud.get(rel, "")
@@ -81,10 +87,14 @@ def _cartao(f: Path, mud: dict, hoje: dt.date) -> dict:
         parado = (hoje - dt.date.fromisoformat(mudanca)).days
     except ValueError:
         parado = 0
-    return {"caminho": rel, "tema": fm.get("tema", f.stem), "estado": fm.get("estado") or "ativo",
+    return {"caminho": rel, "tema": _titulo(f, fm), "estado": fm.get("estado") or "ativo",
             "proximo_passo": fm.get("proximo_passo", ""), "prazo": fm.get("prazo", ""),
             "cliente": fm.get("cliente", ""), "marca": fm.get("marca", ""), "frente": fm.get("frente", ""),
-            "holding": fm.get("holding", ""), "mudanca": mudanca, "parado_dias": parado}
+            "holding": fm.get("holding", ""), "mudanca": mudanca, "parado_dias": parado}, fm
+
+
+def _cartao(f: Path, mud: dict, hoje: dt.date) -> dict:
+    return _cartao_fm(f, mud, hoje)[0]
 
 
 def _cartao_de(rel: str) -> dict:
@@ -134,8 +144,7 @@ def quadro() -> dict:
     mud = esper_mcp._mudancas()
     cols = {c: [] for c, _ in COLUNAS}
     for f in esper_mcp._arquivos_de_tema():
-        card = _cartao(f, mud, hoje)
-        fm = esper_mcp._frontmatter(f.read_text(encoding="utf-8"))
+        card, fm = _cartao_fm(f, mud, hoje)
         cols[_coluna(*_area_empresa(card["caminho"], fm))].append(card)
 
     def ordem(c):
@@ -171,7 +180,7 @@ def mover(d: dict) -> dict:
         return {"ok": True, "mudou": False, "caminho": rel, "cartao": _cartao_de(rel)}
     esper_mcp.mover_tema(rel, area, empresa, marca, frente, holding)
     novo = f"{pasta}/{f.name}"
-    return {"ok": True, "mudou": True, "caminho": novo, "gravado": _gravar(f"painel: move {fm.get('tema', f.stem)}"),
+    return {"ok": True, "mudou": True, "caminho": novo, "gravado": _gravar(f"painel: move {_titulo(f, fm)}"),
             "cartao": _cartao_de(novo)}
 
 
@@ -209,15 +218,21 @@ def campos(d: dict) -> dict:
                 raise Erro("prazo: use AAAA-MM-DD")
     if not mudar and prazo is None:
         raise Erro("nada para mudar")
+    original = txt
     for k, v in mudar.items():
-        txt = esper_mcp._campo(txt, k, v)
-    if prazo is not None:  # prazo sem aspas, como no modelo
+        if v != fm.get(k, ""):  # só a chave que mudou; cliente/marca vazios não entram onde não existem
+            txt = esper_mcp._campo(txt, k, v)
+    if prazo is not None and prazo != fm.get("prazo", ""):  # prazo sem aspas, como no modelo
         m_ = re.match(r"^---\n(.*?\n)---\n", txt, re.S)
+        if not m_:
+            raise Erro("arquivo sem frontmatter")
         linha = f"prazo: {prazo}" if prazo else "prazo:"
         cab, n = re.subn(r"^prazo:[^\n]*$", lambda _: linha, m_.group(1), count=1, flags=re.M)
         txt = "---\n" + (cab if n else cab + linha + "\n") + txt[m_.end(1):]
+    if txt == original:
+        return {"ok": True, "mudou": False, "cartao": _cartao_de(rel)}
     f.write_text(txt, encoding="utf-8")
-    return {"ok": True, "gravado": _gravar(f"painel: {fm.get('tema', f.stem)}"), "cartao": _cartao_de(rel)}
+    return {"ok": True, "mudou": True, "gravado": _gravar(f"painel: {_titulo(f, fm)}"), "cartao": _cartao_de(rel)}
 
 
 def anotar(d: dict) -> dict:
@@ -227,20 +242,25 @@ def anotar(d: dict) -> dict:
     if secao not in SECOES:
         raise Erro(f"seção: use {', '.join(SECOES)}")
     texto = _texto(d.get("texto"), "texto", obrigatorio=True)
+    antes = f.read_text(encoding="utf-8")
     esper_mcp.anotar(rel, secao, f"{esper_mcp._agora():%Y-%m-%d}: {texto}")
-    fm = esper_mcp._frontmatter(f.read_text(encoding="utf-8"))
-    return {"ok": True, "gravado": _gravar(f"painel: anota {fm.get('tema', f.stem)}"), "cartao": _cartao_de(rel)}
+    depois = f.read_text(encoding="utf-8")
+    if depois == antes:
+        return {"ok": True, "mudou": False, "cartao": _cartao_de(rel)}
+    titulo = _titulo(f, esper_mcp._frontmatter(depois))
+    return {"ok": True, "mudou": True, "gravado": _gravar(f"painel: anota {titulo}"), "cartao": _cartao_de(rel)}
 
 
 def criar(d: dict) -> dict:
     area, empresa = _destino(d.get("coluna"))
     titulo = _texto(d.get("tema"), "tema", obrigatorio=True)
     cliente = _texto(d.get("cliente"), "cliente")
+    frente, holding = str(d.get("frente") or ""), str(d.get("holding") or "")
+    pasta = esper_mcp._pasta_do_tema(area, empresa, "", frente, holding, cliente)
     slug = _slug(titulo)
-    out = esper_mcp.criar_tema(slug, titulo, area=area, empresa=empresa, cliente=cliente,
-                               frente=str(d.get("frente") or ""), holding=str(d.get("holding") or ""))
-    rel = out.split(": ", 1)[1].split(" ", 1)[0]
-    return {"ok": True, "caminho": rel, "gravado": _gravar(f"painel: cria {titulo}"), "cartao": _cartao_de(rel)}
+    esper_mcp.criar_tema(slug, titulo, area=area, empresa=empresa, cliente=cliente, frente=frente, holding=holding)
+    rel = f"{pasta}/{slug}.md"
+    return {"ok": True, "mudou": True, "caminho": rel, "gravado": _gravar(f"painel: cria {titulo}"), "cartao": _cartao_de(rel)}
 
 
 # ---------- HTTP ----------
@@ -313,13 +333,29 @@ def _lista(nome: str) -> set[str]:
     return {x.strip() for x in os.environ.get(nome, "").split(",") if x.strip()}
 
 
+def _abrir_socket(caminho: str) -> socket.socket:
+    """Socket Unix só do dono (0600): o cabeçalho de login só vale se o único outro par é o tailscaled (root).
+    (uvicorn.run(uds=...) deixaria 0666.)"""
+    if os.path.lexists(caminho):
+        os.unlink(caminho)  # sobra de execução anterior
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    velho = os.umask(0o177)
+    try:
+        s.bind(caminho)
+    finally:
+        os.umask(velho)
+    os.chmod(caminho, 0o600)
+    s.listen(128)
+    return s
+
+
 def main() -> None:
     import uvicorn
 
     raiz = Path(os.path.expanduser(os.environ.get("ESPER_BRAIN", "~/esper-brain"))).resolve()
     sock = os.environ.get("ESPER_PAINEL_SOCK", "/run/esper-painel/painel.sock")
     app = criar_app(raiz, _lista("ESPER_PAINEL_LOGINS"), _lista("ESPER_PAINEL_ORIGENS"))
-    uvicorn.run(app, uds=sock, proxy_headers=False)
+    uvicorn.Server(uvicorn.Config(app, proxy_headers=False)).run(sockets=[_abrir_socket(sock)])
 
 
 if __name__ == "__main__":

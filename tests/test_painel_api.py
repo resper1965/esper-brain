@@ -209,3 +209,71 @@ def test_gravar_falha_502(cli, cerebro):
                    check=True)
     r = cli.post("/api/campos", json={"caminho": "projetos/casa/a.md", "estado": "parado"}, headers=HP)
     assert r.status_code == 502 and r.json()["erro"]
+
+
+def head(cerebro):
+    return subprocess.run(["git", "-C", str(cerebro), "rev-parse", "HEAD"], capture_output=True, text=True).stdout
+
+
+def test_403_nao_muda_arquivo(cli, cerebro):
+    m.criar_tema("a", "A", area="casa")
+    antes = (cerebro / "projetos/casa/a.md").read_text()
+    for h in ({}, H, {**H, "Origin": "https://mal.example"}):
+        r = cli.post("/api/campos", json={"caminho": "projetos/casa/a.md", "estado": "parado"}, headers=h)
+        assert r.status_code == 403
+    assert (cerebro / "projetos/casa/a.md").read_text() == antes
+
+
+def test_campos_sem_mudanca_nao_grava(cli, cerebro):
+    m.criar_tema("a", "A", area="casa")
+    assert m.gravar("init").startswith("gravado:")
+    corpo = {"caminho": "projetos/casa/a.md", "estado": "parado", "proximo_passo": "x", "prazo": "2027-01-01"}
+    r = cli.post("/api/campos", json=corpo, headers=HP)
+    assert r.status_code == 200 and r.json()["mudou"] is True
+    h = head(cerebro)
+    r = cli.post("/api/campos", json=corpo, headers=HP)
+    assert r.status_code == 200, r.text
+    assert r.json()["mudou"] is False and r.json()["cartao"]["estado"] == "parado"
+    assert head(cerebro) == h
+
+
+def test_campos_cliente_vazio_fora_de_trabalho_nao_entra(cli, cerebro):
+    (cerebro / "projetos/casa").mkdir(parents=True)
+    f = cerebro / "projetos/casa/b.md"
+    f.write_text('---\ntema: "B"\narea: casa\nestado: ativo\n---\n# B\n', encoding="utf-8")
+    assert m.gravar("init").startswith("gravado:")
+    r = cli.post("/api/campos", json={"caminho": "projetos/casa/b.md", "cliente": "", "marca": "",
+                                      "estado": "parado"}, headers=HP)
+    assert r.status_code == 200, r.text
+    t = f.read_text()
+    assert "cliente" not in t and "marca" not in t and 'estado: "parado"' in t
+
+
+def test_prazo_sem_frontmatter_400(cli, cerebro):
+    (cerebro / "projetos/sem.md").write_text("# sem frontmatter\n", encoding="utf-8")
+    r = cli.post("/api/campos", json={"caminho": "projetos/sem.md", "prazo": "2027-01-01"}, headers=HP)
+    assert r.status_code == 400 and "frontmatter" in r.json()["erro"]
+
+
+def test_quadro_tema_em_pasta_e_ordem_sem_prazo(cli, cerebro):
+    import os
+    (cerebro / "projetos/casa/reforma").mkdir(parents=True)
+    (cerebro / "projetos/casa/reforma/README.md").write_text("---\narea: casa\n---\n# r\n", encoding="utf-8")
+    m.criar_tema("velho", "Velho", area="casa")
+    m.criar_tema("novo", "Novo", area="casa")
+    for nome, ts in (("velho.md", 1_600_000_000), ("novo.md", 1_700_000_000),
+                     ("reforma/README.md", 1_650_000_000)):
+        os.utime(cerebro / "projetos/casa" / nome, (ts, ts))
+    col = {c["id"]: c["cartoes"] for c in cli.get("/api/quadro", headers=H).json()["colunas"]}
+    assert [c["tema"] for c in col["casa"]] == ["Novo", "reforma", "Velho"]
+
+
+def test_socket_privado(tmp_path):
+    from painel.app import _abrir_socket
+    p = tmp_path / "s.sock"
+    p.write_text("velho")
+    s = _abrir_socket(str(p))
+    try:
+        assert (p.stat().st_mode & 0o777) == 0o600
+    finally:
+        s.close()
