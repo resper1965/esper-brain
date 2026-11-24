@@ -33,5 +33,5 @@ A VPS se chama `srv-hermes` na Tailscale. Estes são os endereços para mandar a
 | Paperless (documentos) | https://srv-hermes.tail985643.ts.net:8444 |
 | Painel do gabi-finance (dinheiro) | https://srv-hermes.tail985643.ts.net:8446 |
 | Painel de temas (quadro estilo Trello do esper-brain) | https://srv-hermes.tail985643.ts.net:8448 |
-| Hermes (painel do agente) | https://hermes.tail985643.ts.net |
+| Hermes (painel do agente) | https://srv-hermes.tail985643.ts.net:8449 |
 | GitHub do cérebro | https://github.com/resper1965/esper-brain |
