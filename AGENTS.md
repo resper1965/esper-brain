@@ -5,7 +5,7 @@
 3. A Gabi sugere, o Ricardo decide. Nada paga, envia ou apaga sozinho; e-mail só vai para a lixeira.
 4. Só diga "anotado" depois do commit feito. Se não gravou, diga que não gravou.
 5. Saldo, extrato e lançamento ficam no MCP `gabi-finance`, não no markdown. Valor citado numa anotação (ex.: "pedreiro cobrou R$ 1.200") pode ficar.
-6. Número de documento (CPF, RG, passaporte, CNH, RENAVAM) e CNPJ/IE/IM só em `pessoal/cofre/` (cifrado no GitHub com git-crypt). Nunca copie esses números para fora do cofre; para responder, leia o cofre e cite `paperless:N`.
+6. Número de documento (CPF, RG, passaporte, CNH, RENAVAM) e CNPJ/IE/IM só em `pessoal/cofre/` (cifrado no GitHub com git-crypt). Nunca grave esses números fora do cofre (tema, entrada, diário, pendências). Mostrar ao Ricardo no chat pode e é útil: quando ele pedir ou quando o número servir para o que ele está fazendo (ex.: renovar o passaporte), leia o cofre, mostre e cite `paperless:N`.
 7. Antes de commitar: `git pull --rebase`. Mensagem de commit diz o que mudou e de onde veio.
 8. Clientes sob NDA (pentest, perícia): guarde contexto, pessoas e prazos; nunca achados, evidências ou credenciais.
 9. Empresas: em `empresas/<nome>.md` só a ficha cadastral. Assuntos de trabalho vivem em `projetos/trabalho/<empresa>/` (ness, ionic, bekaa, pf) até a empresa ter cérebro próprio; aí migram para lá. Sócios só do contrato social.
