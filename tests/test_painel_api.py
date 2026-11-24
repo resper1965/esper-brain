@@ -282,3 +282,17 @@ def test_socket_privado(tmp_path):
 def test_cabecalhos_contra_embutir(cli):
     r = cli.get("/api/quadro", headers=H)
     assert r.headers["x-frame-options"] == "DENY" and "frame-ancestors 'none'" in r.headers["content-security-policy"]
+
+
+def test_pedidos_do_computador(cli, cerebro):
+    import esper_mcp as em
+    em.pedido_pc_criar("baixar o recibo da Vivo")
+    assert cli.get("/api/pedidos").status_code == 403
+    p = cli.get("/api/pedidos", headers=H).json()["pedidos"]
+    assert [(x["numero"], x["tarefa"]) for x in p] == [(1, "baixar o recibo da Vivo")]
+    assert cli.post("/api/pedidos/feito", json={"numero": 1, "resultado": "ok"}, headers=H).status_code == 403  # sem Origin
+    r = cli.post("/api/pedidos/feito", json={"numero": 1, "resultado": "1 PDF no Paperless"}, headers=HP)
+    assert r.status_code == 200 and r.json()["gravado"].startswith("gravado:")
+    assert cli.get("/api/pedidos", headers=H).json()["pedidos"] == []
+    assert cli.post("/api/pedidos/feito", json={"numero": 1, "resultado": "de novo"}, headers=HP).status_code == 400
+    assert cli.post("/api/pedidos/feito", json={"numero": "1", "resultado": "x"}, headers=HP).status_code == 400

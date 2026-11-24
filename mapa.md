@@ -11,6 +11,7 @@
 | `empresas/<nome>.md` | uma ficha cadastral por empresa (sócios, quem assina, contrato social no Paperless); assuntos de trabalho ficam em `projetos/trabalho/<empresa>/` até a empresa ter cérebro próprio |
 | `pessoal/cofre/` | números de documento, CNPJ/IE/IM — **cifrado** (git-crypt); sem a chave aparece binário |
 | `projetos/<área>/` | temas por área: `familia/`, `trabalho/` (`ness/`, `ionic/<frente>/`, `bekaa/`, inclui freelancer), `patrimonio/` (`baalbeck/`, `fakiha/`), `saude/`, `casa/`, `pessoal/`; formato em `projetos/_modelo.md` |
+| `pedidos-pc.md` | fila de tarefas para o computador do Ricardo (OpenBot, com as sessões dele): baixar recibos e arquivos de sites; ver `docs/openbot.md` |
 | `entrada.md` | caixa de entrada: pedaços soltos com palpite, até a consolidação (skill `organizar`, 21:30) |
 | `diario/AAAA/MM-DD.md` | nota do dia |
 | `skills/` | instruções portáveis: `capturar`, `organizar`, `pensar-junto`, `retomar`, `salvar-sessao`, `digestao` (diária, 06:30), `vigiar` (avisos: diário 08:40, revisão segunda 08:50) |

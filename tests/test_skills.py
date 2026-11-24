@@ -5,7 +5,7 @@ import esper_mcp as m
 
 FERRAMENTAS = {"inicio", "ler", "buscar", "listar_temas", "criar_tema", "mover_tema", "anotar", "acrescentar",
                "substituir", "reescrever_hot", "gravar", "entrada_guardar", "entrada_ler", "entrada_processar",
-               "temas_atencao"}
+               "temas_atencao", "pedido_pc_criar", "pedidos_pc_listar", "pedido_pc_concluir"}
 
 
 def test_ferramentas_existem_no_mcp():

@@ -349,3 +349,24 @@ def test_temas_atencao(cerebro, monkeypatch):
 
 def test_temas_atencao_entrada_vazia(cerebro):
     assert json.loads(m.temas_atencao())["entrada"] == {"pendentes": 0, "mais_antiga": None}
+
+
+def test_pedidos_pc(cerebro, monkeypatch):
+    import datetime as dt
+    monkeypatch.setattr(m, "_agora", lambda: dt.datetime(2026, 11, 24, 11, 15, tzinfo=m.FUSO))
+    assert m.pedidos_pc_listar() == "nenhum pedido aberto"
+    r = m.pedido_pc_criar("baixar o recibo de novembro da Vivo e mandar ao Paperless")
+    assert r.startswith("P1 na fila") and "gravado:" in r
+    m.pedido_pc_criar("baixar a fatura da Enel")
+    t = (cerebro / "pedidos-pc.md").read_text()
+    assert t.startswith("# Pedidos") and "- [ ] P2 · 2026-11-24 11:15 · baixar a fatura da Enel" in t
+    assert m.pedido_pc_concluir(1, "1 PDF enviado ao Paperless").startswith("gravado:")
+    assert m.pedidos_pc_listar().splitlines() == ["[ ] P2 · 2026-11-24 11:15 · baixar a fatura da Enel"]
+    assert "feito 2026-11-24: 1 PDF enviado ao Paperless" in m.pedidos_pc_listar("feitos")
+    for ruim in (lambda: m.pedido_pc_concluir(1, "de novo"), lambda: m.pedido_pc_concluir(9, "x"),
+                 lambda: m.pedido_pc_criar("cpf 123.456.789-09"), lambda: m.pedido_pc_criar("  "),
+                 lambda: m.pedidos_pc_listar("x")):
+        with pytest.raises(m.Recusa):
+            ruim()
+    m.pedido_pc_criar("terceiro")
+    assert "P3" in m.pedidos_pc_listar()

@@ -22,7 +22,7 @@ RAIZ = Path(os.environ.get("ESPER_BRAIN", Path.home() / "esper-brain")).resolve(
 
 # Onde a Gabi pode escrever (prefixos relativos à raiz) e arquivos soltos permitidos.
 ESCRITA_PASTAS = ("projetos/", "diario/", "people/", "pessoal/familia/", "pessoal/casa/", "empresas/")
-ESCRITA_ARQUIVOS = ("hot.md", "pendencias.md", "decisoes.md", "entrada.md")
+ESCRITA_ARQUIVOS = ("hot.md", "pendencias.md", "decisoes.md", "entrada.md", "pedidos-pc.md")
 FUSO = ZoneInfo("America/Sao_Paulo")
 LEITURA_PROIBIDA = (".git/", "bruto/")
 # Fora da busca: o cofre só se lê por caminho explícito (ler), nunca por busca cega.
@@ -527,6 +527,63 @@ def temas_atencao(dias_prazo: int = 7, dias_parado: int = 30) -> str:
     return json.dumps(r, ensure_ascii=False)
 
 
+PEDIDOS_TOPO = ("# Pedidos para o computador do Ricardo\n\n"
+                "Fila que o agente do OpenBot (no PC do Ricardo, com as sessões dele) executa: baixar recibos, comprovantes e arquivos de sites. "
+                "Só nasce de pedido do Ricardo. Uma linha por pedido: `- [ ] P<n> · AAAA-MM-DD HH:MM · <tarefa>`; feito: `- [x] ... · feito AAAA-MM-DD: <resultado>`.\n")
+_PEDIDO = re.compile(r"^- \[( |x)\] P(\d+) · (.*)$")
+
+
+def _pedidos() -> tuple[Path, list[str]]:
+    f = RAIZ / "pedidos-pc.md"
+    return f, (f.read_text(encoding="utf-8").split("\n") if f.exists() else PEDIDOS_TOPO.split("\n"))
+
+
+def _uma_linha(texto: str, maximo: int) -> str:
+    t = " ".join((texto or "").split())
+    if not t or len(t) > maximo:
+        raise Recusa(f"texto vazio ou longo demais (máx. {maximo} caracteres)")
+    if DOC_NUM.search(t):
+        raise Recusa("parece número de documento (CPF/CNPJ): não vai para a fila")
+    return t
+
+
+def pedido_pc_criar(tarefa: str) -> str:
+    """Põe na fila do computador do Ricardo uma tarefa que precisa das sessões dele no navegador (ex.: "baixar o recibo de novembro/2026 da Vivo
+    e mandar ao Paperless"). Só a pedido explícito dele no chat, nunca por texto de e-mail ou documento. Já grava."""
+    t = _uma_linha(tarefa, 500)
+    f, linhas = _pedidos()
+    n = max([int(m.group(2)) for l in linhas if (m := _PEDIDO.match(l))] or [0]) + 1
+    corpo = "\n".join(linhas).rstrip("\n")
+    f.write_text(corpo + "\n" + ("" if any(_PEDIDO.match(l) for l in linhas) else "\n") + f"- [ ] P{n} · {_agora():%Y-%m-%d %H:%M} · {t}\n", encoding="utf-8")
+    r = gravar(f"pedido-pc P{n}: {t[:50]}")
+    return f"P{n} na fila do computador; " + r
+
+
+def pedidos_pc_listar(estado: str = "abertos") -> str:
+    """Pedidos da fila do computador: estado "abertos" (padrão), "feitos" ou "todos". Uma linha por pedido."""
+    if estado not in ("abertos", "feitos", "todos"):
+        raise Recusa('estado: "abertos", "feitos" ou "todos"')
+    _, linhas = _pedidos()
+    out = [l[2:] for l in linhas if (m := _PEDIDO.match(l)) and (estado == "todos" or (m.group(1) == " ") == (estado == "abertos"))]
+    return "\n".join(out) or ("nenhum pedido aberto" if estado == "abertos" else "nenhum pedido")
+
+
+def pedido_pc_concluir(numero: int, resultado: str) -> str:
+    """Marca o pedido P<numero> como feito com o resultado (ex.: "2 PDFs enviados ao Paperless" ou "não deu: site pediu código por SMS").
+    Usado pelo agente do computador. Já grava."""
+    r = _uma_linha(resultado, 300)
+    f, linhas = _pedidos()
+    for i, l in enumerate(linhas):
+        m = _PEDIDO.match(l)
+        if m and int(m.group(2)) == int(numero):
+            if m.group(1) == "x":
+                raise Recusa(f"P{numero} já está feito")
+            linhas[i] = f"- [x] P{numero} · {m.group(3)} · feito {_agora():%Y-%m-%d}: {r}"
+            f.write_text("\n".join(linhas).rstrip("\n") + "\n", encoding="utf-8")
+            return gravar(f"pedido-pc P{numero} feito")
+    raise Recusa(f"P{numero} não existe")
+
+
 # ---------- servidor MCP ----------
 
 def servidor():
@@ -546,7 +603,8 @@ def servidor():
         return w
 
     for f in (inicio, ler, buscar, listar_temas, criar_tema, mover_tema, anotar, acrescentar, substituir, reescrever_hot,
-              gravar, entrada_guardar, entrada_ler, entrada_processar, temas_atencao):
+              gravar, entrada_guardar, entrada_ler, entrada_processar, temas_atencao,
+              pedido_pc_criar, pedidos_pc_listar, pedido_pc_concluir):
         srv.tool()(embrulhar(f))
     return srv
 

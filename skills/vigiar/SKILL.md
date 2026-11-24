@@ -21,9 +21,10 @@ Só lê; **nunca grava nem muda tema**: avisa e, no máximo, pergunta. Ferrament
    - parados há mais de 30 dias (`⏸ parado há N dias`);
    - sem próximo passo (`sem próximo passo`), só os 5 mais antigos.
    Um tema que aparece em mais de uma lista vira uma linha só, com as marcas juntas.
-3. Entrada: se `entrada.pendentes` > 0 e a mais antiga tem mais de 2 dias → `📥 N pedaços na entrada desde DD/MM — quer que eu organize?`.
-4. Tudo vazio → `Tudo em dia nos temas. 👍` (no semanal sempre responde).
-5. Termine com: `Qual destes você quer retomar?`
+3. Pedidos do computador: `pedidos_pc_listar()`; aberto há mais de 3 dias → `💻 P<n> esperando no computador desde DD/MM`.
+4. Entrada: se `entrada.pendentes` > 0 e a mais antiga tem mais de 2 dias → `📥 N pedaços na entrada desde DD/MM — quer que eu organize?`.
+5. Tudo vazio → `Tudo em dia nos temas. 👍` (no semanal sempre responde).
+6. Termine com: `Qual destes você quer retomar?`
 
 ## Regras
 - Datas em DD/MM e dia da semana abreviado; "hoje" e "amanhã" quando couber. Hoje = America/Sao_Paulo (`temas_atencao` já traz `hoje`).

@@ -266,6 +266,26 @@ def criar(d: dict) -> dict:
 
 # ---------- HTTP ----------
 
+def pedidos() -> dict:
+    """Fila do computador (pedidos-pc.md), só os abertos: para o agente do OpenBot."""
+    itens = []
+    for l in esper_mcp.pedidos_pc_listar("abertos").splitlines():
+        m = re.match(r"^\[ \] P(\d+) · (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) · (.*)$", l)
+        if m:
+            itens.append({"numero": int(m.group(1)), "quando": m.group(2), "tarefa": m.group(3)})
+    return {"pedidos": itens}
+
+
+def pedido_feito(d: dict) -> dict:
+    n = d.get("numero")
+    if not isinstance(n, int) or isinstance(n, bool) or n < 1:
+        raise Erro("numero deve ser inteiro positivo")
+    out = esper_mcp.pedido_pc_concluir(n, _texto(d.get("resultado"), "resultado", obrigatorio=True))
+    if not out.startswith("gravado:"):
+        raise Erro(out, 502)
+    return {"ok": True, "numero": n, "gravado": out}
+
+
 def criar_app(raiz: Path, logins: set[str], origens: set[str]) -> Starlette:
     esper_mcp.RAIZ = Path(raiz).resolve()  # global do módulo: um usuário, um processo
 
@@ -316,6 +336,9 @@ def criar_app(raiz: Path, logins: set[str], origens: set[str]) -> Starlette:
     async def api_quadro(req: Request):
         return await executar(quadro)
 
+    async def api_pedidos(req: Request):
+        return await executar(pedidos)
+
     async def api_tema(req: Request):
         return await executar(tema, req.query_params.get("caminho", ""))
 
@@ -327,6 +350,8 @@ def criar_app(raiz: Path, logins: set[str], origens: set[str]) -> Starlette:
         Route("/api/campos", post(campos), methods=["POST"]),
         Route("/api/anotar", post(anotar), methods=["POST"]),
         Route("/api/criar", post(criar), methods=["POST"]),
+        Route("/api/pedidos", get(api_pedidos), methods=["GET"]),
+        Route("/api/pedidos/feito", post(pedido_feito), methods=["POST"]),
     ])
     return _cabecalhos_seguros(app)
 
