@@ -1,12 +1,12 @@
 ---
-tema: "Fazenda em Piedade"
+tema: "Casa na Bento de Andrade"
 area: "patrimonio"
 empresa: ""
 marca: ""
 cliente: ""
 papel: ""
 frente: ""
-holding: "baalbeck"
+holding: ""
 estado: ativo            # ativo | parado | concluído
 apelidos: []
 proximo_passo: ""
@@ -14,7 +14,7 @@ prazo:                   # AAAA-MM-DD
 pessoas: []
 ligacoes: []             # paperless:N, gabi-finance projeto:N
 ---
-# Fazenda em Piedade
+# Casa na Bento de Andrade
 
 ## Onde estou
 ## Ideias soltas

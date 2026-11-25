@@ -1,12 +1,12 @@
 ---
-tema: "Armazém na Rua Mendes Caldeira"
+tema: "Fazenda em Piedade"
 area: "patrimonio"
 empresa: ""
 marca: ""
 cliente: ""
 papel: ""
 frente: ""
-holding: "fakiha"
+holding: ""
 estado: ativo            # ativo | parado | concluído
 apelidos: []
 proximo_passo: ""
@@ -14,7 +14,7 @@ prazo:                   # AAAA-MM-DD
 pessoas: []
 ligacoes: []             # paperless:N, gabi-finance projeto:N
 ---
-# Armazém na Rua Mendes Caldeira
+# Fazenda em Piedade
 
 ## Onde estou
 ## Ideias soltas

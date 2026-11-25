@@ -6,7 +6,7 @@ marca: ""
 cliente: ""
 papel: ""
 frente: ""
-holding: "fakiha"
+holding: ""
 estado: ativo            # ativo | parado | concluído
 apelidos: []
 proximo_passo: ""

@@ -1,12 +1,12 @@
 ---
-tema: "Casa na Bento de Andrade"
+tema: "Armazém na Rua Mendes Caldeira"
 area: "patrimonio"
 empresa: ""
 marca: ""
 cliente: ""
 papel: ""
 frente: ""
-holding: "fakiha"
+holding: ""
 estado: ativo            # ativo | parado | concluído
 apelidos: []
 proximo_passo: ""
@@ -14,7 +14,7 @@ prazo:                   # AAAA-MM-DD
 pessoas: []
 ligacoes: []             # paperless:N, gabi-finance projeto:N
 ---
-# Casa na Bento de Andrade
+# Armazém na Rua Mendes Caldeira
 
 ## Onde estou
 ## Ideias soltas
