@@ -19,8 +19,10 @@ ligacoes: []             # paperless:N, gabi-finance projeto:N
 ## Onde estou
 ## Ideias soltas
 ## Fatos e decisões
+- 2026-11-25: VGBL sacado de Benedita Clarice Correa Esper (mãe) precisa ser recomposto — pesquisar valor em IRPFs antigos e recompor com juros e correção monetária.
 - 2026-11-25: Herdeiros são Chafic Esper, Sandra Maria Esper e Ricardo Esper, mas não de forma proporcional — já houveram antecipações.
 ## Perguntas em aberto
+- Valor do VGBL sacado da Benedita: pesquisar em IRPFs antigos e calcular recomposição com juros + correção monetária.
 - Qual a proporção de cada herdeiro considerando as antecipações já feitas?
 ## Prazos
 ## Histórico
