@@ -3,7 +3,7 @@ origem: gabi-brain pessoa:benedita
 ---
 # Benedita
 
-- nome completo: Benedita Clarisse Correa Esper
+- nome completo: Benedita Clarice Correa Esper
 - parentesco: mãe
 
 ## Documentos
