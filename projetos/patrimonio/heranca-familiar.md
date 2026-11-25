@@ -19,7 +19,9 @@ ligacoes: []             # paperless:N, gabi-finance projeto:N
 ## Onde estou
 ## Ideias soltas
 ## Fatos e decisões
+- 2026-11-25: Herdeiros são Chafic Esper, Sandra Maria Esper e Ricardo Esper, mas não de forma proporcional — já houveram antecipações.
 ## Perguntas em aberto
+- Qual a proporção de cada herdeiro considerando as antecipações já feitas?
 ## Prazos
 ## Histórico
 
