@@ -16,6 +16,20 @@ exec 9>"$raiz/.git/gravar.lock"
 flock -w 60 9 || { echo "outra gravação em andamento há mais de 60 s" >&2; exit 3; }
 
 git pull --rebase --autostash -q >/dev/null 2>&1 || { echo "falhou: git pull --rebase (nada gravado)" >&2; git rebase --abort 2>/dev/null || true; exit 4; }
+# Conflito (a sua edição e uma mudança que já estava no GitHub mexeram nas mesmas linhas): nunca grave marcas de conflito.
+# A edição local fica guardada no stash (o --autostash a mantém quando o pop conflita); o arquivo volta à versão do GitHub.
+conflito=()
+while IFS= read -r f; do [ -n "$f" ] && conflito+=("$f"); done < <(git diff --name-only --diff-filter=U 2>/dev/null)
+for p in "$@"; do
+  [ -f "$p" ] && grep -qE '^(<<<<<<<|>>>>>>>)( |$)' -- "$p" && conflito+=("$p")
+done
+if [ ${#conflito[@]} -gt 0 ]; then
+  mapfile -t conflito < <(printf '%s\n' "${conflito[@]}" | sort -u)
+  git reset -q -- "${conflito[@]}" 2>/dev/null || true
+  git checkout -q HEAD -- "${conflito[@]}" 2>/dev/null || true
+  echo "conflito em ${conflito[*]}: o arquivo mudou no GitHub enquanto você editava. Nada gravado; o arquivo voltou à versão do GitHub e a sua edição ficou no stash (git stash list). Releia o arquivo e refaça a edição." >&2
+  exit 7
+fi
 git add -- "$@"
 if git diff --cached --quiet; then echo "nada a gravar"; exit 0; fi
 
