@@ -7,3 +7,5 @@
 - [ ] Decidir troca da Ranger por híbrido · vence 2027-03-31 · origem projetos/casa/trocar-de-carro.md
 
 - [ ] Aceito: Alinhamento Reteste (Ness x PG) · vence 2026-11-30 · origem email (digestão 2026-11-27)
+
+- [ ] Aceito: Alinhamento Reteste (Ness x PG) · vence 2026-11-30 · origem email (digestão 2026-11-27)

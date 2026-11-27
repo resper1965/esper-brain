@@ -3,36 +3,31 @@
 _Atualizado em 2026-11-27 06:30 pela digestão. Fontes que falharam: nenhuma._
 
 ## Hoje
-- 10:00-10:30 Compromisso
-- 11:00-12:00 Compromisso
-- 12:00-13:00 Compromisso
-- 13:00-13:30 Compromisso
+- 10:00 às 10:30 · compromisso
+- 11:00 às 12:00 · compromisso
+- 12:00 às 13:00 · compromisso
+- 13:00 às 13:30 · compromisso
 
 ## Próximos 7 dias
 - 30/11 11:00 Alinhamento Reteste (Ness x PG)
 - 01/12 09:00 Família Almeida: post de Júlio no LinkedIn
+- 30/11 prazo Cloud8 pagamento de R$ 4.216,82
+- ⚠️ 05/12 caixa começa negativo (mín -R$ 20.201 em 10/12)
 
 ## Esperando o Ricardo
-- Protesto: pagar custas cartorárias para baixar protesto · email
-- Cloud8/Dânae: NF R$ 4.216,82 - prazo 30/11 · email
-- Condomínio Villa Dei Fiori: AGE precisa posição Item 3 · email
-- ness-MKT: risco suspensão (Google Cloud faturamento) · email
-- AGTT PoC: Daniel Ajzen aguarda avaliação · email
-- Nilo: perícia forense - decisão Fase 0 · email
-- IHOS-G: engine error 500 · email
-- ness.OS: hub com falha (workers error) · email
-- Google: alerta segurança login resper@bekaa.eu · email
-- Cloudflare: readicionar domínios carloseugeniodc.com.br · email
-- OpenRouter: depreciação Gemini 2.5 Flash · email
-- Thiago Bertuzzi (Teams) · 10d sem resposta
-- Daniel Ajzen (Teams) · 30h sem resposta
-- Monica Yoshida (Teams) · 19h sem resposta
-- Ismael Araujo (Teams) · novo
+- ⚠️ Protesto: pagar custas cartorárias para baixar · email
+- ⚠️ Cloud8: R$ 4.216,82 vencido, prazo 30/11 · email
+- Renovação domínio VERDE8ENERGIA (proposta aprovada) · email
+- Reembolso NESS Decolar programado 30/11 · email
+- Thiago Bertuzzi · Teams (81h)
+- Daniel Ajzen · Teams (30h)
+- Monica Yoshida · Teams (19h)
+- Ismael Araujo · Teams (1h)
 
 ## Prazos e vencimentos (até 14 dias)
-- 07/11 R$ 16.000,00 a receber da Ness (20 dias atrasado)
-- 16/11 R$ 10.208,00 a receber da X2 (11 dias atrasado)
-- 05/12 Caixa negativo
+- 30/11 prazo Cloud8
+- ⚠️ 05/12 caixa negativo
+- A receber atrasado: Ness R$ 16.000 (20d), X2 R$ 10.208 (11d)
 
 ## Documentos novos (ontem)
 - nada
